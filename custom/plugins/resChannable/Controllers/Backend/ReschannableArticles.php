@@ -27,7 +27,7 @@ class Shopware_Controllers_Backend_ReschannableArticles extends Shopware_Control
         ]);
         $builder->from('s_articles', 'articles')
             ->join('articles', 's_articles_supplier', 'suppliers', 'articles.supplierID = suppliers.id')
-            ->join('articles', 's_articles_details', 'details', 'articles.main_detail_id = details.id')
+            ->join('articles', 's_articles_details', 'details', 'articles.id = details.articleID')
             ->leftJoin('details', 'reschannable_articles', 'reschannable_articles', 'details.id = reschannable_articles.detailID')
             ->andWhere('reschannable_articles.detailID IS NULL');
 
