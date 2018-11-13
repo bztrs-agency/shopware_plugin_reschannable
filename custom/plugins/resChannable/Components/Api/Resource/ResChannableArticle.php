@@ -119,7 +119,9 @@ class ResChannableArticle extends Resource
             'imageAttribute',
             'imageMapping',
             'mappingRule',
-            'ruleOption'
+            'ruleOption',
+            'articleImages',
+            'articleImageParent'
         ])
             ->from('Shopware\Models\Article\Detail', 'detail')
             ->join('detail.article', 'article')
@@ -130,6 +132,8 @@ class ResChannableArticle extends Resource
             ->leftJoin('images.mappings', 'imageMapping')
             ->leftJoin('imageMapping.rules', 'mappingRule')
             ->leftJoin('mappingRule.option', 'ruleOption')
+            ->leftJoin('article.images', 'articleImages')
+            ->leftJoin('articleImages.parent', 'articleImageParent')
             ->leftJoin('detailPrices.customerGroup', 'priceCustomerGroup')
             ->leftJoin('detail.configuratorOptions', 'configuratorOptions')
             ->leftJoin('configuratorOptions.group', 'configuratorGroups')
@@ -177,7 +181,9 @@ class ResChannableArticle extends Resource
             'imageAttribute',
             'imageMapping',
             'mappingRule',
-            'ruleOption'
+            'ruleOption',
+            'articleImages',
+            'articleImageParent'
         ])
             ->from('resChannable\Models\resChannableArticle\resChannableArticle', 'ChannableArticle')
             ->join('ChannableArticle.detail', 'detail')
@@ -189,6 +195,8 @@ class ResChannableArticle extends Resource
             ->leftJoin('images.mappings', 'imageMapping')
             ->leftJoin('imageMapping.rules', 'mappingRule')
             ->leftJoin('mappingRule.option', 'ruleOption')
+            ->leftJoin('article.images', 'articleImages')
+            ->leftJoin('articleImages.parent', 'articleImageParent')
             ->leftJoin('detailPrices.customerGroup', 'priceCustomerGroup')
             ->leftJoin('article.tax', 'tax')
             ->leftJoin('article.propertyValues', 'propertyValues')
