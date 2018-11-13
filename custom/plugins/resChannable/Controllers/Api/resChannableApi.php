@@ -142,7 +142,12 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
             $item['releaseDate'] = $detail['releaseDate'];
 
-            $item['images'] = $this->getArticleImagePaths($detail['images']);
+            $images = $detail['images'];
+            if ( empty($images) ) {
+                $images = $article['images'];
+            }
+
+            $item['images'] = $this->getArticleImagePaths($images);
 
             # Links
             $links = $this->getArticleLinks($articleId,$article['name'],$detail['number']);
