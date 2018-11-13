@@ -109,7 +109,6 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
     private function getArticleList()
     {
-
         $articleIdList = $this->getArticleIdList();
 
         $result = array();
@@ -143,10 +142,10 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
             $item['releaseDate'] = $detail['releaseDate'];
 
-            $item['images'] = $this->getArticleImagePaths($article['images']);
+            $item['images'] = $this->getArticleImagePaths($detail['images']);
 
             # Links
-            $links = $this->getArticleLinks($articleId,$article['name']);
+            $links = $this->getArticleLinks($articleId,$article['name'],$detail['number']);
             $item['seoUrl'] = $links['seoUrl'];
             $item['url'] = $links['url'];
             $item['rewriteUrl'] = $links['rewrite'];
@@ -193,6 +192,9 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
             # Properties
             $item['properties'] = $this->getArticleProperties($article['propertyValues']);
+
+            # Configuration
+            $item['options'] = $this->getProductConfiguration($detail['configuratorOptions']);
 
             # Similar
             $item['similar'] = $this->channableArticleResource->getArticleSimilar($articleId);
@@ -266,8 +268,17 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
             try {
 
-                $image = $this->mediaResource->getOne($articleImages[$i]['mediaId']);
-                $images[] = $image['path'];
+                if ($articleImages[$i]['mediaId']) {
+
+                    $image = $this->mediaResource->getOne($articleImages[$i]['mediaId']);
+                    $images[] = $image['path'];
+
+                } elseif ( !empty($articleImages[$i]['parent']) && $articleImages[$i]['parent']['mediaId'] ) {
+
+                    $image = $this->mediaResource->getOne($articleImages[$i]['parent']['mediaId']);
+                    $images[] = $image['path'];
+
+                }
 
             } catch ( \Exception $Exception ) {
 
@@ -286,14 +297,14 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
      *
      * @return array
      */
-    protected function getArticleLinks($articleId,$name)
+    protected function getArticleLinks($articleId,$name,$number)
     {
         $baseFile = $this->getBasePath();
-        $detail = $baseFile . '?sViewport=detail&sArticle=' . $articleId;
+        $detail = $baseFile . '?sViewport=detail&sArticle=' . $articleId . '&number='.$number;
 
         $rewrite = Shopware()->Modules()->Core()->sRewriteLink($detail, $name);
 
-        $seoUrl = $baseFile . $this->channableArticleResource->getArticleSeoUrl($articleId);
+        $seoUrl = $baseFile . $this->channableArticleResource->getArticleSeoUrl($articleId) . '?number='.$number;
 
         $links = array('rewrite' => $rewrite,
                        'url'  => $detail,
@@ -416,7 +427,6 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
     private function loadPaymentMethods()
     {
-
         $builder = Shopware()->Container()->get('dbal_connection')->createQueryBuilder();
         $builder->select([
             'id',
@@ -440,7 +450,7 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
         for ( $i = 0; $i < sizeof($propertyValues); $i++) {
 
-            $properties[$propertyValues[$i]['option']['name']] = $propertyValues[$i]['value'];
+            $properties[$propertyValues[$i]['option']['name']][] = $propertyValues[$i]['value'];
 
         }
 
@@ -466,5 +476,17 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         return $languages;
     }
 
+    private function getProductConfiguration($configuratorOptions)
+    {
+        $options = array();
+
+        for ( $i = 0; $i < sizeof($configuratorOptions); $i++) {
+
+            $options[$configuratorOptions[$i]['group']['name']] = $configuratorOptions[$i]['name'];
+
+        }
+
+        return $options;
+    }
 
 }

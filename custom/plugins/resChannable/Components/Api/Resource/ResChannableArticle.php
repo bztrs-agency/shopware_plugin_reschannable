@@ -105,32 +105,44 @@ class ResChannableArticle extends Resource
             'propertyValues',
             'propertyOption',
             'configuratorOptions',
+            'configuratorGroups',
             'supplier',
-            'priceCustomGroup',
+            'priceCustomerGroup',
             'detailAttribute',
             'propertyGroup',
             'customerGroups',
             'detailUnit',
             'similar',
             'related',
-            'images'
+            'images',
+            'imageParent',
+            'imageAttribute',
+            'imageMapping',
+            'mappingRule',
+            'ruleOption'
         ])
             ->from('Shopware\Models\Article\Detail', 'detail')
             ->join('detail.article', 'article')
             ->leftJoin('detail.prices', 'detailPrices')
-            ->leftJoin('detailPrices.customerGroup', 'priceCustomGroup')
+            ->leftJoin('detail.images', 'images')
+            ->leftJoin('images.parent', 'imageParent')
+            ->leftJoin('imageParent.attribute', 'imageAttribute')
+            ->leftJoin('images.mappings', 'imageMapping')
+            ->leftJoin('imageMapping.rules', 'mappingRule')
+            ->leftJoin('mappingRule.option', 'ruleOption')
+            ->innerJoin('detailPrices.customerGroup', 'priceCustomerGroup')
+            ->leftJoin('detail.configuratorOptions', 'configuratorOptions')
+            ->innerJoin('configuratorOptions.group', 'configuratorGroups')
             ->leftJoin('article.tax', 'tax')
             ->leftJoin('article.propertyValues', 'propertyValues')
             ->leftJoin('propertyValues.option', 'propertyOption')
             ->leftJoin('article.supplier', 'supplier')
             ->leftJoin('detail.attribute', 'detailAttribute')
-            ->leftJoin('detail.configuratorOptions', 'configuratorOptions')
             ->leftJoin('article.propertyGroup', 'propertyGroup')
             ->leftJoin('article.customerGroups', 'customerGroups')
             ->leftJoin('detail.unit', 'detailUnit')
             ->leftJoin('article.similar', 'similar')
-            ->leftJoin('article.related', 'related')
-            ->leftJoin('article.images', 'images');
+            ->leftJoin('article.related', 'related');
 
         return $builder;
     }
@@ -151,33 +163,45 @@ class ResChannableArticle extends Resource
             'propertyValues',
             'propertyOption',
             'configuratorOptions',
+            'configuratorGroups',
             'supplier',
-            'priceCustomGroup',
+            'priceCustomerGroup',
             'detailAttribute',
             'propertyGroup',
             'customerGroups',
             'detailUnit',
             'similar',
             'related',
-            'images'
+            'images',
+            'imageParent',
+            'imageAttribute',
+            'imageMapping',
+            'mappingRule',
+            'ruleOption'
         ])
             ->from('resChannable\Models\resChannableArticle\resChannableArticle', 'ChannableArticle')
             ->join('ChannableArticle.detail', 'detail')
             ->join('detail.article', 'article')
             ->leftJoin('detail.prices', 'detailPrices')
-            ->leftJoin('detailPrices.customerGroup', 'priceCustomGroup')
+            ->leftJoin('detail.images', 'images')
+            ->leftJoin('images.parent', 'imageParent')
+            ->leftJoin('imageParent.attribute', 'imageAttribute')
+            ->leftJoin('images.mappings', 'imageMapping')
+            ->leftJoin('imageMapping.rules', 'mappingRule')
+            ->leftJoin('mappingRule.option', 'ruleOption')
+            ->innerJoin('detailPrices.customerGroup', 'priceCustomerGroup')
             ->leftJoin('article.tax', 'tax')
             ->leftJoin('article.propertyValues', 'propertyValues')
             ->leftJoin('propertyValues.option', 'propertyOption')
             ->leftJoin('article.supplier', 'supplier')
             ->leftJoin('detail.attribute', 'detailAttribute')
             ->leftJoin('detail.configuratorOptions', 'configuratorOptions')
+            ->innerJoin('configuratorOptions.group', 'configuratorGroups')
             ->leftJoin('article.propertyGroup', 'propertyGroup')
             ->leftJoin('article.customerGroups', 'customerGroups')
             ->leftJoin('detail.unit', 'detailUnit')
             ->leftJoin('article.similar', 'similar')
-            ->leftJoin('article.related', 'related')
-            ->leftJoin('article.images', 'images');
+            ->leftJoin('article.related', 'related');
 
         return $builder;
     }
@@ -217,28 +241,6 @@ class ResChannableArticle extends Resource
 
         return $paginator->getIterator()->current();
     }
-
-    /**
-     * Selects all images of the main variant of the passed article id.
-     * The images are sorted by their position value.
-     *
-     * @param $articleId
-     *
-     * @return array
-     */
-    /*public function getArticleImages($articleId)
-    {
-        $builder = $this->getManager()->createQueryBuilder();
-        $builder->select(['images'])
-            ->from('Shopware\Models\Article\Image', 'images')
-            ->innerJoin('images.article', 'article')
-            ->where('article.id = :articleId')
-            ->orderBy('images.position', 'ASC')
-            ->andWhere('images.parentId IS NULL')
-            ->setParameters(['articleId' => $articleId]);
-
-        return $this->getFullResult($builder);
-    }*/
 
     /**
      * Helper function which selects all categories of the passed
