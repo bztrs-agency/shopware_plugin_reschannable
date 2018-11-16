@@ -455,7 +455,7 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
         for ( $i = 0; $i < sizeof($propertyValues); $i++) {
 
-            $properties[$propertyValues[$i]['option']['name']][] = $propertyValues[$i]['value'];
+            $properties[$this->filterFieldNames($propertyValues[$i]['option']['name'])][] = $propertyValues[$i]['value'];
 
         }
 
@@ -487,11 +487,22 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
         for ( $i = 0; $i < sizeof($configuratorOptions); $i++) {
 
-            $options[$configuratorOptions[$i]['group']['name']] = $configuratorOptions[$i]['name'];
+            $options[$this->filterFieldNames($configuratorOptions[$i]['group']['name'])] = $configuratorOptions[$i]['name'];
 
         }
 
         return $options;
+    }
+
+
+    private function filterFieldNames($field)
+    {
+        # replace umlauts
+        $field = str_replace(array('Ä','Ö','Ü','ä','ö','ü','ß'),array('Ae','Oe','Ue','ae','oe','ue','ss'),$field);
+        # strip bad chars
+        $field = preg_replace('/[^0-9a-zA-Z_]+/','',$field);
+
+        return $field;
     }
 
 }
