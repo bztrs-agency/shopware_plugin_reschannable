@@ -41,7 +41,6 @@ class ResChannableArticle extends Resource
         return ['data' => $articles, 'total' => $totalResult];
     }
 
-
     /**
      * @param $offset
      * @param $limit
@@ -100,14 +99,12 @@ class ResChannableArticle extends Resource
         $builder->select([
             'detail',
             'article',
-            'detailPrices',
             'tax',
             'propertyValues',
             'propertyOption',
             'configuratorOptions',
             'configuratorGroups',
             'supplier',
-            'priceCustomerGroup',
             'detailAttribute',
             'propertyGroup',
             'customerGroups',
@@ -125,7 +122,9 @@ class ResChannableArticle extends Resource
         ])
             ->from('Shopware\Models\Article\Detail', 'detail')
             ->join('detail.article', 'article')
-            ->leftJoin('detail.prices', 'detailPrices')
+            ->leftJoin('detail.unit', 'detailUnit')
+
+            # oversized query
             ->leftJoin('detail.images', 'images')
             ->leftJoin('images.parent', 'imageParent')
             ->leftJoin('imageParent.attribute', 'imageAttribute')
@@ -134,7 +133,6 @@ class ResChannableArticle extends Resource
             ->leftJoin('mappingRule.option', 'ruleOption')
             ->leftJoin('article.images', 'articleImages')
             ->leftJoin('articleImages.parent', 'articleImageParent')
-            ->leftJoin('detailPrices.customerGroup', 'priceCustomerGroup')
             ->leftJoin('detail.configuratorOptions', 'configuratorOptions')
             ->leftJoin('configuratorOptions.group', 'configuratorGroups')
             ->leftJoin('article.tax', 'tax')
@@ -144,7 +142,6 @@ class ResChannableArticle extends Resource
             ->leftJoin('detail.attribute', 'detailAttribute')
             ->leftJoin('article.propertyGroup', 'propertyGroup')
             ->leftJoin('article.customerGroups', 'customerGroups')
-            ->leftJoin('detail.unit', 'detailUnit')
             ->leftJoin('article.similar', 'similar')
             ->leftJoin('article.related', 'related');
 
@@ -162,7 +159,6 @@ class ResChannableArticle extends Resource
             'ChannableArticle',
             'article',
             'detail',
-            'detailPrices',
             'tax',
             'propertyValues',
             'propertyOption',
@@ -172,7 +168,6 @@ class ResChannableArticle extends Resource
             'priceCustomerGroup',
             'detailAttribute',
             'propertyGroup',
-            'customerGroups',
             'detailUnit',
             'similar',
             'related',
@@ -188,7 +183,9 @@ class ResChannableArticle extends Resource
             ->from('resChannable\Models\resChannableArticle\resChannableArticle', 'ChannableArticle')
             ->join('ChannableArticle.detail', 'detail')
             ->join('detail.article', 'article')
-            ->leftJoin('detail.prices', 'detailPrices')
+            ->leftJoin('detail.unit', 'detailUnit')
+
+            # oversized query
             ->leftJoin('detail.images', 'images')
             ->leftJoin('images.parent', 'imageParent')
             ->leftJoin('imageParent.attribute', 'imageAttribute')
@@ -197,7 +194,6 @@ class ResChannableArticle extends Resource
             ->leftJoin('mappingRule.option', 'ruleOption')
             ->leftJoin('article.images', 'articleImages')
             ->leftJoin('articleImages.parent', 'articleImageParent')
-            ->leftJoin('detailPrices.customerGroup', 'priceCustomerGroup')
             ->leftJoin('article.tax', 'tax')
             ->leftJoin('article.propertyValues', 'propertyValues')
             ->leftJoin('propertyValues.option', 'propertyOption')
@@ -207,7 +203,6 @@ class ResChannableArticle extends Resource
             ->leftJoin('configuratorOptions.group', 'configuratorGroups')
             ->leftJoin('article.propertyGroup', 'propertyGroup')
             ->leftJoin('article.customerGroups', 'customerGroups')
-            ->leftJoin('detail.unit', 'detailUnit')
             ->leftJoin('article.similar', 'similar')
             ->leftJoin('article.related', 'related');
 
@@ -323,6 +318,58 @@ class ResChannableArticle extends Resource
         $article = $this->getSingleResult($builder);
 
         return $article['related'];
+    }
+
+    /**
+     * Helper function to create the query builder for the "getPricesQuery" function.
+     * This function can be hooked to modify the query builder of the query object.
+     *
+     * @param $articleDetailId
+     *
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    public function getPrices($articleDetailId, $tax)
+    {
+        $builder = $this->getManager()->createQueryBuilder();
+
+        $builder->select(['prices', 'customerGroup', 'attribute'])
+            ->from('Shopware\Models\Article\Price', 'prices')
+            ->join('prices.customerGroup', 'customerGroup')
+            ->leftJoin('prices.attribute', 'attribute')
+            ->where('prices.articleDetailsId = ?1')
+            ->setParameter(1, $articleDetailId)
+            ->orderBy('customerGroup.id', 'ASC')
+            ->addOrderBy('prices.from', 'ASC');
+
+        $prices = $this->getFullResult($builder);
+
+        $priceList = array();
+        foreach ( $prices as $price ) {
+
+            $pr = array(
+
+                'priceNetto' => $price['price'],
+                'priceBrutto' => round($price['price'] * (($tax + 100) / 100),2),
+                'pseudoPriceNetto' => $price['pseudoPrice'],
+                'pseudoPriceBrutto' => round($price['pseudoPrice'] * (($tax + 100) / 100),2)
+
+            );
+
+            $priceList[$this->filterFieldNames($price['customerGroupKey'])]['from_'.$price['from'].'_to_'.$price['to']] = $pr;
+
+        }
+
+        return $priceList;
+    }
+
+    private function filterFieldNames($field)
+    {
+        # replace umlauts
+        $field = str_replace(array('Ä','Ö','Ü','ä','ö','ü','ß'),array('Ae','Oe','Ue','ae','oe','ue','ss'),$field);
+        # strip bad chars
+        $field = preg_replace('/[^0-9a-zA-Z_]+/','',$field);
+
+        return $field;
     }
 
 }

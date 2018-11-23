@@ -163,10 +163,7 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
             }
 
             # Price
-            $item['priceNetto'] = $detail['prices'][0]['price'];
-            $item['priceBrutto'] = round($detail['prices'][0]['price'] * (($article['tax']['tax'] + 100) / 100),2);
-            $item['pseudoPriceNetto'] = $detail['prices'][0]['pseudoPrice'];
-            $item['pseudoPriceBrutto'] = round($detail['prices'][0]['pseudoPrice'] * (($article['tax']['tax'] + 100) / 100),2);
+            $item['prices'] = $this->channableArticleResource->getPrices($detail['id'],$article['tax']['tax']);
             $item['currency'] = $this->shop->getCurrency()->getCurrency();
             $item['taxRate'] = $article['tax']['tax'];
 
@@ -493,7 +490,6 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
         return $options;
     }
-
 
     private function filterFieldNames($field)
     {
