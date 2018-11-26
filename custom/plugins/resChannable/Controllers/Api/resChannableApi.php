@@ -164,6 +164,12 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
             # Price
             $item['prices'] = $this->channableArticleResource->getPrices($detail['id'],$article['tax']['tax']);
+
+            $item['priceNetto'] = 0;
+            $item['priceBrutto'] = 0;
+            $item['pseudoPriceNetto'] = 0;
+            $item['pseudoPriceBrutto'] = 0;
+
             $item['currency'] = $this->shop->getCurrency()->getCurrency();
             $item['taxRate'] = $article['tax']['tax'];
 
