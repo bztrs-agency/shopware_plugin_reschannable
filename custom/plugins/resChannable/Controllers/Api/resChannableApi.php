@@ -124,8 +124,20 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
                 $detail = $channableArticle;
             }
 
+            # Image check here because of performance issues
+            $imageArticle = $this->channableArticleResource->getArticleImages($detail['id']);
+
+            $images = $imageArticle['images'];
+            #if ( empty($images) ) {
+            #    $images = $imageArticle['article']['images'];
+            #}
+            if ( $this->pluginConfig['apiOnlyArticlesWithImg'] && empty($images) ) {
+                continue;
+            }
+
             $article = $detail['article'];
             $articleId = $detail['articleId'];
+
             $item = array();
 
             $item['id'] = $detail['id'];
@@ -142,11 +154,7 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
             $item['releaseDate'] = $detail['releaseDate'];
 
-            $images = $detail['images'];
-            if ( empty($images) ) {
-                $images = $article['images'];
-            }
-
+            # Images
             $item['images'] = $this->getArticleImagePaths($images);
 
             # Links
@@ -164,11 +172,19 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
             # Price
             $item['prices'] = $this->channableArticleResource->getPrices($detail['id'],$article['tax']['tax']);
-
-            $item['priceNetto'] = 0;
-            $item['priceBrutto'] = 0;
-            $item['pseudoPriceNetto'] = 0;
-            $item['pseudoPriceBrutto'] = 0;
+            # Set first price of price list in root
+            if ( $item['prices'] ) {
+                foreach ( $item['prices'] as $priceGroup ) {
+                    foreach ( $priceGroup as $price ) {
+                        $item['priceNetto'] = $price['priceNetto'];
+                        $item['priceBrutto'] = $price['priceBrutto'];
+                        $item['pseudoPriceNetto'] = $price['pseudoPriceNetto'];
+                        $item['pseudoPriceBrutto'] = $price['pseudoPriceBrutto'];
+                        break;
+                    }
+                    break;
+                }
+            }
 
             $item['currency'] = $this->shop->getCurrency()->getCurrency();
             $item['taxRate'] = $article['tax']['tax'];
@@ -199,10 +215,10 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
             $item['shippingCosts'] = $this->getShippingCosts($detail);
 
             # Properties
-            $item['properties'] = $this->getArticleProperties($article['propertyValues']);
+            $item['properties'] = $this->getArticleProperties($detail['id']);
 
             # Configuration
-            $item['options'] = $this->getProductConfiguration($detail['configuratorOptions']);
+            $item['options'] = $this->getDetailConfiguratiorOptions($detail['id']);
 
             # Similar
             $item['similar'] = $this->channableArticleResource->getArticleSimilar($articleId);
@@ -212,6 +228,9 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
             # Translations
             $item['translations'] = $this->getTranslations($articleId);
+
+            # Excluded customer groups
+            $item['excludedCustomerGroups'] = $this->getExcludedCustomerGroups($detail['id']);
 
             $result[] = $item;
 
@@ -232,13 +251,13 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         $filter = array();
 
         # only articles with images
-        if ( $this->pluginConfig['apiOnlyArticlesWithImg'] ) {
+        /*if ( $this->pluginConfig['apiOnlyArticlesWithImg'] ) {
             $filter[] = array(
                 'property'   => 'images.id',
                 'expression' => '>',
                 'value'      => '0'
             );
-        }
+        }*/
 
         # only active articles
         if ( $this->pluginConfig['apiOnlyActiveArticles'] ) {
@@ -452,10 +471,19 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         return $this->paymentMethods;
     }
 
-    private function getArticleProperties($propertyValues)
+    /**
+     * Get article properties
+     *
+     * @param $detailId
+     * @return array
+     */
+    private function getArticleProperties($detailId)
     {
-        $properties = array();
+        $detail = $this->channableArticleResource->getArticleProperties($detailId);
 
+        $propertyValues = $detail['article']['propertyValues'];
+
+        $properties = array();
         for ( $i = 0; $i < sizeof($propertyValues); $i++) {
 
             $properties[$this->filterFieldNames($propertyValues[$i]['option']['name'])][] = $propertyValues[$i]['value'];
@@ -465,13 +493,19 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         return $properties;
     }
 
+    /**
+     * Get article translations
+     *
+     * @param $articleId
+     * @return array
+     */
     private function getTranslations($articleId)
     {
         $builder = Shopware()->Container()->get('dbal_connection')->createQueryBuilder();
-        $builder->select([
+        $builder->select(array(
             'translations.languageID','locales.language','locales.locale','translations.name',
             'translations.description','translations.description_long as descriptionLong'
-        ]);
+        ));
         $builder->from('s_articles_translations', 'translations');
         $builder->innerJoin('translations','s_core_shops','shops','translations.languageID = shops.id');
         $builder->innerJoin('shops','s_core_locales','locales','shops.locale_id = locales.id');
@@ -484,19 +518,61 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         return $languages;
     }
 
-    private function getProductConfiguration($configuratorOptions)
+    /**
+     * Get detail configuration options
+     *
+     * @param $detailId
+     * @return array
+     */
+    private function getDetailConfiguratiorOptions($detailId)
     {
+        $detail = $this->channableArticleResource->getDetailConfiguratiorOptions($detailId);
+
         $options = array();
+        if (isset($detail['configuratorOptions'])) {
 
-        for ( $i = 0; $i < sizeof($configuratorOptions); $i++) {
+            for ($i = 0; $i < sizeof($detail['configuratorOptions']); $i++) {
 
-            $options[$this->filterFieldNames($configuratorOptions[$i]['group']['name'])] = $configuratorOptions[$i]['name'];
+                $options[$this->filterFieldNames($detail['configuratorOptions'][$i]['group']['name'])] = $detail['configuratorOptions'][$i]['name'];
+
+            }
 
         }
 
         return $options;
     }
 
+    /**
+     * Get excluded customer groups
+     *
+     * @param $detailId
+     * @return array
+     */
+    private function getExcludedCustomerGroups($detailId)
+    {
+        $grp = $this->channableArticleResource->getExcludedCustomerGroups($detailId);
+
+        $groups = array();
+
+        if ( $grp ) {
+
+            for ($i = 0; $i < sizeof($grp); $i++) {
+
+                $groups[$this->filterFieldNames($grp[$i]['key'])] = $grp[$i]['name'];
+
+            }
+
+        }
+
+        return $groups;
+    }
+
+    /**
+     * Remove bad chars from field names
+     *
+     * @param $field
+     * @return string
+     */
     private function filterFieldNames($field)
     {
         # replace umlauts

@@ -4,30 +4,65 @@
     <label lang="de">Channable Connector</label>
     <label lang="en">Channable Connector</label>
 
-    <version>1.1.3</version>
+    <version>1.1.4</version>
     <copyright>(c) by RESPONSE GmbH</copyright>
     <license>MIT</license>
     <link>http://www.response-gmbh.de/</link>
     <author>RESPONSE GmbH</author>
     <compatibility minVersion="5.2.27"/>
 
-    <changelog version="1.0.0">
-        <changes lang="de">Erstveröffentlichung.</changes>
-        <changes lang="en">First release.</changes>
-    </changelog>
-
-    <changelog version="1.1.0">
+    <changelog version="1.1.4">
         <changes lang="de">
             <![CDATA[
                 <ul>
-                    <li>Neue Konfiguration, um alle Artikel ohne Artikelzuordnung zu exportieren.</li>
+                    <li>Performance Optimierung.</li>
+                    <li>Export von ausgeschlossenen Kundengruppen.</li>
+                    <li>PHP Kompatibilitätsverbesserungen.</li>
                 </ul>
             ]]>
         </changes>
         <changes lang="en">
             <![CDATA[
                 <ul>
-                    <li>Added configuration to transfer all articles without article mapping.</li>
+                    <li>Performance optimization.</li>
+                    <li>Export of excluded customer groups.</li>
+                    <li>PHP compatibility improvements</li>
+                </ul>
+            ]]>
+        </changes>
+    </changelog>
+
+    <changelog version="1.1.3">
+        <changes lang="de">
+            <![CDATA[
+                <ul>
+                    <li>Performance Optimierung.</li>
+                    <li>Export aller Preislisten.</li>
+                </ul>
+            ]]>
+        </changes>
+        <changes lang="en">
+            <![CDATA[
+                <ul>
+                    <li>Performance optimization.</li>
+                    <li>Export of all price lists.</li>
+                </ul>
+            ]]>
+        </changes>
+    </changelog>
+
+    <changelog version="1.1.2">
+        <changes lang="de">
+            <![CDATA[
+                <ul>
+                    <li>Optimierung der Varianten (Bilder, Eigenschaften, Konfiguration, URLs).</li>
+                </ul>
+            ]]>
+        </changes>
+        <changes lang="en">
+            <![CDATA[
+                <ul>
+                    <li>Optimization of variants (images, properties, configuration, URLs).</li>
                 </ul>
             ]]>
         </changes>
@@ -52,40 +87,26 @@
         </changes>
     </changelog>
 
-    <changelog version="1.1.2">
+    <changelog version="1.1.0">
         <changes lang="de">
             <![CDATA[
                 <ul>
-                    <li>Optimierung der Varianten (Bilder, Eigenschaften, Konfiguration, URLs).</li>
+                    <li>Neue Konfiguration, um alle Artikel ohne Artikelzuordnung zu exportieren.</li>
                 </ul>
             ]]>
         </changes>
         <changes lang="en">
             <![CDATA[
                 <ul>
-                    <li>Optimization of variants (images, properties, configuration, URLs).</li>
+                    <li>Added configuration to transfer all articles without article mapping.</li>
                 </ul>
             ]]>
         </changes>
     </changelog>
 
-    <changelog version="1.1.3">
-        <changes lang="de">
-            <![CDATA[
-                <ul>
-                    <li>Performance Optimierung.</li>
-                    <li>Export aller Preislisten.</li>
-                </ul>
-            ]]>
-        </changes>
-        <changes lang="en">
-            <![CDATA[
-                <ul>
-                    <li>Performance optimization.</li>
-                    <li>Export of all price lists.</li>
-                </ul>
-            ]]>
-        </changes>
+    <changelog version="1.0.0">
+        <changes lang="de">Erstveröffentlichung.</changes>
+        <changes lang="en">First release.</changes>
     </changelog>
 
 </plugin>

@@ -19,12 +19,12 @@ class Shopware_Controllers_Backend_ReschannableArticles extends Shopware_Control
         $search = $this->Request()->getParam('search', '');
         /** @var QueryBuilder $builder */
         $builder = $this->get('dbal_connection')->createQueryBuilder();
-        $builder->select([
+        $builder->select(array(
             'SQL_CALC_FOUND_ROWS details.id as articleId',
             'articles.name',
             'details.ordernumber as number',
             'suppliers.name as supplierName',
-        ]);
+        ));
         $builder->from('s_articles', 'articles')
             ->join('articles', 's_articles_supplier', 'suppliers', 'articles.supplierID = suppliers.id')
             ->join('articles', 's_articles_details', 'details', 'articles.id = details.articleID')
@@ -44,11 +44,11 @@ class Shopware_Controllers_Backend_ReschannableArticles extends Shopware_Control
 
         $count = $this->get('dbal_connection')->fetchColumn('SELECT FOUND_ROWS()');
 
-        $this->View()->assign([
+        $this->View()->assign(array(
             'success' => true,
             'data' => $result,
             'total' => (int) $count,
-        ]);
+        ));
     }
 
     /**
@@ -62,12 +62,12 @@ class Shopware_Controllers_Backend_ReschannableArticles extends Shopware_Control
         $search = $this->Request()->getParam('search', '');
 
         $builder = Shopware()->Models()->createQueryBuilder();
-        $builder->select([
+        $builder->select(array(
             'details.id as articleId',
             'articles.name',
             'details.number',
             'suppliers.name as supplierName',
-        ]);
+        ));
 
         $builder->from('resChannable\Models\resChannableArticle\resChannableArticle', 'resChannableArticle')
             ->join('resChannableArticle.detail', 'details')
@@ -91,11 +91,11 @@ class Shopware_Controllers_Backend_ReschannableArticles extends Shopware_Control
         $data = $paginator->getIterator()->getArrayCopy();
         $count = $paginator->count();
 
-        $this->View()->assign([
+        $this->View()->assign(array(
             'success' => true,
             'data' => $data,
             'total' => $count,
-        ]);
+        ));
     }
 
     /**
@@ -121,7 +121,7 @@ class Shopware_Controllers_Backend_ReschannableArticles extends Shopware_Control
     protected function addChannableArticles($articleIds)
     {
         if (empty($articleIds)) {
-            return ['success' => false, 'error' => 'No articles selected'];
+            return array('success' => false, 'error' => 'No articles selected');
         }
 
         $counter = 0;
@@ -139,7 +139,7 @@ class Shopware_Controllers_Backend_ReschannableArticles extends Shopware_Control
             ++$counter;
         }
 
-        return ['success' => true, 'counter' => $counter];
+        return array('success' => true, 'counter' => $counter);
     }
 
     /**
@@ -165,7 +165,7 @@ class Shopware_Controllers_Backend_ReschannableArticles extends Shopware_Control
     protected function removeChannableArticles($articleIds)
     {
         if (empty($articleIds)) {
-            return ['success' => false, 'error' => 'No articles selected'];
+            return array('success' => false, 'error' => 'No articles selected');
         }
 
         $entityManager = Shopware()->Container()->get('models');
@@ -178,9 +178,9 @@ class Shopware_Controllers_Backend_ReschannableArticles extends Shopware_Control
 
             $repository = $entityManager->getRepository(resChannableArticle::class);
 
-            $article = $repository->findOneBy([
+            $article = $repository->findOneBy(array(
                 'detailID' => $articleId
-            ]);
+            ));
 
             if ($article) {
                 $entityManager->remove($article);
@@ -190,7 +190,7 @@ class Shopware_Controllers_Backend_ReschannableArticles extends Shopware_Control
             ++$counter;
         }
 
-        return ['success' => true, 'counter' => $counter];
+        return array('success' => true, 'counter' => $counter);
     }
 
 }

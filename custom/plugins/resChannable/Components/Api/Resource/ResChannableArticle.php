@@ -38,7 +38,7 @@ class ResChannableArticle extends Resource
         $totalResult = $paginator->count();
         $articles = $paginator->getIterator()->getArrayCopy();
 
-        return ['data' => $articles, 'total' => $totalResult];
+        return array('data' => $articles, 'total' => $totalResult);
     }
 
     /**
@@ -71,7 +71,7 @@ class ResChannableArticle extends Resource
         $totalResult = $paginator->count();
         $articles = $paginator->getIterator()->getArrayCopy();
 
-        return ['data' => $articles, 'total' => $totalResult];
+        return array('data' => $articles, 'total' => $totalResult);
     }
 
     /**
@@ -96,54 +96,20 @@ class ResChannableArticle extends Resource
     {
         $builder = $this->getManager()->createQueryBuilder();
 
-        $builder->select([
+        $builder->select(array(
             'detail',
             'article',
-            'tax',
-            'propertyValues',
-            'propertyOption',
-            'configuratorOptions',
-            'configuratorGroups',
-            'supplier',
-            'detailAttribute',
-            'propertyGroup',
-            'customerGroups',
             'detailUnit',
-            'similar',
-            'related',
-            'images',
-            'imageParent',
-            'imageAttribute',
-            'imageMapping',
-            'mappingRule',
-            'ruleOption',
-            'articleImages',
-            'articleImageParent'
-        ])
+            'tax',
+            'detailAttribute',
+            'supplier'
+        ))
             ->from('Shopware\Models\Article\Detail', 'detail')
             ->join('detail.article', 'article')
             ->leftJoin('detail.unit', 'detailUnit')
-
-            # oversized query
-            ->leftJoin('detail.images', 'images')
-            ->leftJoin('images.parent', 'imageParent')
-            ->leftJoin('imageParent.attribute', 'imageAttribute')
-            ->leftJoin('images.mappings', 'imageMapping')
-            ->leftJoin('imageMapping.rules', 'mappingRule')
-            ->leftJoin('mappingRule.option', 'ruleOption')
-            ->leftJoin('article.images', 'articleImages')
-            ->leftJoin('articleImages.parent', 'articleImageParent')
-            ->leftJoin('detail.configuratorOptions', 'configuratorOptions')
-            ->leftJoin('configuratorOptions.group', 'configuratorGroups')
             ->leftJoin('article.tax', 'tax')
-            ->leftJoin('article.propertyValues', 'propertyValues')
-            ->leftJoin('propertyValues.option', 'propertyOption')
-            ->leftJoin('article.supplier', 'supplier')
             ->leftJoin('detail.attribute', 'detailAttribute')
-            ->leftJoin('article.propertyGroup', 'propertyGroup')
-            ->leftJoin('article.customerGroups', 'customerGroups')
-            ->leftJoin('article.similar', 'similar')
-            ->leftJoin('article.related', 'related');
+            ->leftJoin('article.supplier', 'supplier');
 
         return $builder;
     }
@@ -155,56 +121,22 @@ class ResChannableArticle extends Resource
     {
         $builder = $this->getManager()->createQueryBuilder();
 
-        $builder->select([
+        $builder->select(array(
             'ChannableArticle',
             'article',
             'detail',
-            'tax',
-            'propertyValues',
-            'propertyOption',
-            'configuratorOptions',
-            'configuratorGroups',
-            'supplier',
-            'priceCustomerGroup',
-            'detailAttribute',
-            'propertyGroup',
             'detailUnit',
-            'similar',
-            'related',
-            'images',
-            'imageParent',
-            'imageAttribute',
-            'imageMapping',
-            'mappingRule',
-            'ruleOption',
-            'articleImages',
-            'articleImageParent'
-        ])
+            'tax',
+            'detailAttribute',
+            'supplier'
+        ))
             ->from('resChannable\Models\resChannableArticle\resChannableArticle', 'ChannableArticle')
             ->join('ChannableArticle.detail', 'detail')
             ->join('detail.article', 'article')
             ->leftJoin('detail.unit', 'detailUnit')
-
-            # oversized query
-            ->leftJoin('detail.images', 'images')
-            ->leftJoin('images.parent', 'imageParent')
-            ->leftJoin('imageParent.attribute', 'imageAttribute')
-            ->leftJoin('images.mappings', 'imageMapping')
-            ->leftJoin('imageMapping.rules', 'mappingRule')
-            ->leftJoin('mappingRule.option', 'ruleOption')
-            ->leftJoin('article.images', 'articleImages')
-            ->leftJoin('articleImages.parent', 'articleImageParent')
             ->leftJoin('article.tax', 'tax')
-            ->leftJoin('article.propertyValues', 'propertyValues')
-            ->leftJoin('propertyValues.option', 'propertyOption')
-            ->leftJoin('article.supplier', 'supplier')
             ->leftJoin('detail.attribute', 'detailAttribute')
-            ->leftJoin('detail.configuratorOptions', 'configuratorOptions')
-            ->leftJoin('configuratorOptions.group', 'configuratorGroups')
-            ->leftJoin('article.propertyGroup', 'propertyGroup')
-            ->leftJoin('article.customerGroups', 'customerGroups')
-            ->leftJoin('article.similar', 'similar')
-            ->leftJoin('article.related', 'related');
+            ->leftJoin('article.supplier', 'supplier');
 
         return $builder;
     }
@@ -258,7 +190,7 @@ class ResChannableArticle extends Resource
     public function getArticleCategories($articleId)
     {
         $builder = $this->getManager()->createQueryBuilder();
-        $builder->select(['categories.id', 'categories.name'])
+        $builder->select(array('categories.id', 'categories.name'))
             ->from('Shopware\Models\Category\Category', 'categories')
             ->innerJoin('categories.articles', 'articles')
             ->where('articles.id = :articleId')
@@ -271,7 +203,7 @@ class ResChannableArticle extends Resource
     {
         $connection = Shopware()->Container()->get('dbal_connection');
 
-        $url = $connection->fetchColumn("SELECT path FROM `s_core_rewrite_urls` WHERE main=1 AND subshopID=1 AND org_path=?", ['sViewport=detail&sArticle='.$articleId]);
+        $url = $connection->fetchColumn("SELECT path FROM `s_core_rewrite_urls` WHERE main=1 AND subshopID=1 AND org_path=?", array('sViewport=detail&sArticle='.$articleId));
 
         return $url;
     }
@@ -287,7 +219,7 @@ class ResChannableArticle extends Resource
     public function getArticleSimilar($articleId)
     {
         $builder = $this->getManager()->createQueryBuilder();
-        $builder->select(['article', 'PARTIAL similar.{id, name}'])
+        $builder->select(array('article', 'PARTIAL similar.{id, name}'))
             ->from('Shopware\Models\Article\Article', 'article')
             ->innerJoin('article.similar', 'similar')
             ->where('article.id = :articleId')
@@ -309,7 +241,7 @@ class ResChannableArticle extends Resource
     public function getArticleRelated($articleId)
     {
         $builder = $this->getManager()->createQueryBuilder();
-        $builder->select(['article', 'PARTIAL related.{id, name}'])
+        $builder->select(array('article', 'PARTIAL related.{id, name}'))
             ->from('Shopware\Models\Article\Article', 'article')
             ->innerJoin('article.related', 'related')
             ->where('article.id = :articleId')
@@ -321,8 +253,7 @@ class ResChannableArticle extends Resource
     }
 
     /**
-     * Helper function to create the query builder for the "getPricesQuery" function.
-     * This function can be hooked to modify the query builder of the query object.
+     * Get price lists
      *
      * @param $articleDetailId
      *
@@ -332,7 +263,7 @@ class ResChannableArticle extends Resource
     {
         $builder = $this->getManager()->createQueryBuilder();
 
-        $builder->select(['prices', 'customerGroup', 'attribute'])
+        $builder->select(array('prices', 'customerGroup', 'attribute'))
             ->from('Shopware\Models\Article\Price', 'prices')
             ->join('prices.customerGroup', 'customerGroup')
             ->leftJoin('prices.attribute', 'attribute')
@@ -362,6 +293,124 @@ class ResChannableArticle extends Resource
         return $priceList;
     }
 
+    public function getArticleImages($detailId)
+    {
+        $builder = $this->getManager()->createQueryBuilder();
+        $builder->select(array(
+            'detail',
+            'article',
+            'images',
+            'imageParent',
+            'imageAttribute',
+            'imageMapping',
+            'mappingRule',
+            'ruleOption',
+            #'articleImages',
+            #'articleImageParent'
+        ))
+            ->from('Shopware\Models\Article\Detail', 'detail')
+            ->join('detail.article', 'article')
+            ->join('detail.images', 'images')
+            ->leftJoin('images.parent', 'imageParent')
+            ->leftJoin('imageParent.attribute', 'imageAttribute')
+            ->leftJoin('images.mappings', 'imageMapping')
+            ->leftJoin('imageMapping.rules', 'mappingRule')
+            ->leftJoin('mappingRule.option', 'ruleOption')
+            #->leftJoin('article.images', 'articleImages')
+            #->leftJoin('articleImages.parent', 'articleImageParent')
+            ->where('detail.id = :detailId')
+            ->setParameters(array('detailId' => $detailId));
+
+        $images = $this->getSingleResult($builder);
+
+        return $images;
+    }
+
+    /**
+     * Get article properties
+     *
+     * @param $detailId
+     * @return array
+     */
+    public function getArticleProperties($detailId)
+    {
+        $builder = $this->getManager()->createQueryBuilder();
+        $builder->select(array(
+            'detail',
+            'article',
+            'propertyValues',
+            'propertyOption',
+            'propertyGroup',
+        ))
+            ->from('Shopware\Models\Article\Detail', 'detail')
+            ->join('detail.article', 'article')
+            ->join('article.propertyValues', 'propertyValues')
+            ->join('propertyValues.option', 'propertyOption')
+            ->join('article.propertyGroup', 'propertyGroup')
+            ->where('detail.id = :detailId')
+            ->setParameters(array('detailId' => $detailId));
+
+        $properties = $this->getSingleResult($builder);
+
+        return $properties;
+    }
+
+    /**
+     * Get detail configurator options
+     *
+     * @param $detailId
+     * @return array
+     */
+    public function getDetailConfiguratiorOptions($detailId)
+    {
+        $builder = $this->getManager()->createQueryBuilder();
+        $builder->select(array(
+            'detail',
+            'configuratorOptions',
+            'configuratorGroups'
+        ))
+            ->from('Shopware\Models\Article\Detail', 'detail')
+            ->join('detail.configuratorOptions', 'configuratorOptions')
+            ->join('configuratorOptions.group', 'configuratorGroups')
+            ->where('detail.id = :detailId')
+            ->setParameters(array('detailId' => $detailId));
+
+        $options = $this->getSingleResult($builder);
+
+        return $options;
+    }
+
+    /**
+     * Get excluded customer groups
+     *
+     * @param $detailId
+     * @return array|bool
+     */
+    public function getExcludedCustomerGroups($detailId)
+    {
+        $builder = $this->getManager()->createQueryBuilder();
+        $builder->select(array(
+            'detail',
+            'article',
+            'excludedCustomerGroups'
+        ))
+            ->from('Shopware\Models\Article\Detail', 'detail')
+            ->join('detail.article', 'article')
+            ->join('article.customerGroups', 'excludedCustomerGroups')
+            ->where('detail.id = :detailId')
+            ->setParameters(array('detailId' => $detailId));
+
+        $groups = $this->getSingleResult($builder);
+
+        return ( $groups['article'] ? $groups['article']['customerGroups'] : false );
+    }
+
+    /**
+     * Remove bad chars from field names
+     *
+     * @param $field
+     * @return string
+     */
     private function filterFieldNames($field)
     {
         # replace umlauts

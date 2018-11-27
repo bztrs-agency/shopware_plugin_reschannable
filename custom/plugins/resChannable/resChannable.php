@@ -15,12 +15,12 @@ class resChannable extends Plugin
     */
     public static function getSubscribedEvents()
     {
-        return [
+        return array(
             'Enlight_Controller_Action_PreDispatch' => 'addTemplateDir',
             'Enlight_Controller_Dispatcher_ControllerPath_Api_resChannableApi' => 'onGetReschannableApiController',
             'Enlight_Controller_Front_StartDispatch' => 'onEnlightControllerFrontStartDispatch',
             'Enlight_Controller_Action_PostDispatchSecure_Backend_Index' => 'onPostDispatchSecureBackendIndex'
-        ];
+        );
     }
 
     public function onPostDispatchSecureBackendIndex(\Enlight_Event_EventArgs $args) {
@@ -94,7 +94,7 @@ class resChannable extends Plugin
      */
     private function getModelMetaData()
     {
-        return [$this->container->get('models')->getClassMetadata(Models\resChannableArticle\resChannableArticle::class)];
+        return array($this->container->get('models')->getClassMetadata(Models\resChannableArticle\resChannableArticle::class));
     }
 
     /**
