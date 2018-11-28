@@ -12,41 +12,65 @@ class Shopware_Controllers_Backend_ReschannableAutoConnect extends Enlight_Contr
 
     public function getUrlAction()
     {
-
         /** @var User $user */
         $user = Shopware()->Models()->getRepository('Shopware\Models\User\User');
         $user = $user->findOneBy(array('username' => 'ChannableApiUser'));
 
         if ( !$user ) {
 
-            $this->View()->assign([
-                'success' => false,
-                'message' => 'Api user not found.'
-            ]);
+            throw new Shopware\Components\Api\Exception\NotFoundException('Channable API user not found.');
 
-            die();
         }
 
         $sApiKey = $user->getApiKey();
 
-        $baseUrl = $this->getBasePath();
+        $shopValue = $this->Request()->getParam('shopValue');
+
+        preg_match_all('/[0-9]+/',$shopValue,$shops);
+
+        if ( !$shops ) {
+
+            throw new Shopware\Components\Api\Exception\NotFoundException('Shop not found.');
+
+        }
+
+        $shopValue = $shops[0];
+        $shopId = $shopValue[0];
+
+        $shop = Shopware()->Models()->getRepository('Shopware\Models\Shop\Shop')->find($shopId);
+
+        $basePath = $shop->getBasePath();
+        $host = $shop->getHost();
+
+        $scheme = 'http';
+        $secure = $shop->getSecure();
+
+        if ($secure) {
+            $scheme = 'https';
+        }
+
+        $mainShop = $shop->getMain();
+        $mainId = null;
+        if ($mainShop) {
+            $scheme = 'http';
+
+            $secure = $mainShop->getSecure();
+
+            $basePath = $mainShop->getBasePath();
+            $host = $mainShop->getHost();
+
+            if ($secure) {
+                $scheme = 'https';
+            }
+        }
+
+        $path = $scheme . '://' . $host . $basePath;
 
         $url = Shopware()->Snippets()->getNamespace('api/resChannable')->get(
             'autoConnectUrl'
-        ) . '?url='.$baseUrl.'&api_key='.$sApiKey.'&username=ChannableApiUser';
+        ) . '?url='.$path.'&api_key='.$sApiKey.'&username=ChannableApiUser&shop='.$shopId;
 
         echo json_encode(array('url' => $url));
-
     }
-
-    private function getBasePath()
-    {
-        $url = $this->Request()->getBaseUrl();
-        $uri = $this->Request()->getScheme() . '://' . $this->Request()->getHttpHost();
-        $url = $uri . $url;
-
-        return $url;
-    }
-
 
 }

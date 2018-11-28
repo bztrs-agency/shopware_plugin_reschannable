@@ -32,7 +32,7 @@
             <name>apiPollLimit</name>
             <label lang="de">Performance: API Datensatz Limit je Abruf</label>
             <label lang="en">Performance: API record limit per poll</label>
-            <value>250</value>
+            <value>1000</value>
             <description lang="de">Sollten Probleme bzgl. der Laufzeit und des Arbeitsspeichers auftreten, reduzieren Sie diese Zahl.</description>
             <description lang="en">If you have problems with runtime and memory, reduce this number.</description>
             <options>
@@ -49,8 +49,12 @@
                 <handler>
                     <![CDATA[
                     function(button) {
+
                         Ext.Ajax.request({
                         url: 'ReschannableAutoConnect/getUrl/',
+                        params: {
+                            'shopValue': button.name
+                        },
                         method: 'POST',
                         success: function (response){
                          var res = Ext.JSON.decode(response.responseText);

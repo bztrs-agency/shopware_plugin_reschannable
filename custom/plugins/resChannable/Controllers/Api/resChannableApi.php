@@ -55,8 +55,21 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
     public function init()
     {
+        # load certain shop
+        $shopId = $this->Request()->getParam('shop');
         $repository = Shopware()->Models()->getRepository('Shopware\Models\Shop\Shop');
-        $this->shop = $repository->getActiveDefault();
+        $this->shop = $repository->getActiveById($shopId);
+
+        # load default shop if shop is not set
+        if ( !$this->shop && !$shopId ) {
+            $this->shop = $repository->getActiveDefault();
+        }
+
+        # throw exception if shop loading failed
+        if ( !$this->shop ) {
+            throw new Shopware\Components\Api\Exception\NotFoundException('Shop not found');
+        }
+
         $this->shop->registerResources(Shopware()->Container());
         $this->admin = Shopware()->Modules()->Admin();
         $this->export = Shopware()->Modules()->Export();
@@ -85,7 +98,7 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
         if ( !in_array($fnc,$this->allowedFncs)) {
 
-            throw new Shopware\Components\Api\Exception\ValidationException('Function not found');
+            throw new Shopware\Components\Api\Exception\NotFoundException('Function not found');
 
         }
 
@@ -258,6 +271,15 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
                 'value'      => '0'
             );
         }*/
+
+        # filter category id
+        $categoriesId = $this->shop->getCategory()->getId();
+
+        $filter[] = array(
+            'property'   => 'categories.id',
+            'expression' => '=',
+            'value'      => $categoriesId
+        );
 
         # only active articles
         if ( $this->pluginConfig['apiOnlyActiveArticles'] ) {

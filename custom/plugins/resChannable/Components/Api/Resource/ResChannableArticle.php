@@ -106,10 +106,12 @@ class ResChannableArticle extends Resource
         ))
             ->from('Shopware\Models\Article\Detail', 'detail')
             ->join('detail.article', 'article')
+            ->leftJoin('article.allCategories', 'categories', null, null, 'categories.id')
             ->leftJoin('detail.unit', 'detailUnit')
             ->leftJoin('article.tax', 'tax')
             ->leftJoin('detail.attribute', 'detailAttribute')
-            ->leftJoin('article.supplier', 'supplier');
+            ->leftJoin('article.supplier', 'supplier')
+            ->addGroupBy('detail.id');
 
         return $builder;
     }
@@ -133,10 +135,12 @@ class ResChannableArticle extends Resource
             ->from('resChannable\Models\resChannableArticle\resChannableArticle', 'ChannableArticle')
             ->join('ChannableArticle.detail', 'detail')
             ->join('detail.article', 'article')
+            ->join('article.allCategories', 'categories', null, null, 'categories.id')
             ->leftJoin('detail.unit', 'detailUnit')
             ->leftJoin('article.tax', 'tax')
             ->leftJoin('detail.attribute', 'detailAttribute')
-            ->leftJoin('article.supplier', 'supplier');
+            ->leftJoin('article.supplier', 'supplier')
+            ->addGroupBy('detail.id');
 
         return $builder;
     }
