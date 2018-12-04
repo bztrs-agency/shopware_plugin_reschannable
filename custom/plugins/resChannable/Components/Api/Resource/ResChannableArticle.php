@@ -309,19 +309,19 @@ class ResChannableArticle extends Resource
             'imageMapping',
             'mappingRule',
             'ruleOption',
-            #'articleImages',
-            #'articleImageParent'
+            'articleImages',
+            'articleImageParent'
         ))
             ->from('Shopware\Models\Article\Detail', 'detail')
-            ->join('detail.article', 'article')
-            ->join('detail.images', 'images')
+            ->leftJoin('detail.article', 'article')
+            ->leftJoin('detail.images', 'images')
             ->leftJoin('images.parent', 'imageParent')
             ->leftJoin('imageParent.attribute', 'imageAttribute')
             ->leftJoin('images.mappings', 'imageMapping')
             ->leftJoin('imageMapping.rules', 'mappingRule')
             ->leftJoin('mappingRule.option', 'ruleOption')
-            #->leftJoin('article.images', 'articleImages')
-            #->leftJoin('articleImages.parent', 'articleImageParent')
+            ->leftJoin('article.images', 'articleImages')
+            ->leftJoin('articleImages.parent', 'articleImageParent')
             ->where('detail.id = :detailId')
             ->setParameters(array('detailId' => $detailId));
 

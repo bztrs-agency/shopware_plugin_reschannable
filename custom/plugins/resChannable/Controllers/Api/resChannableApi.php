@@ -137,19 +137,23 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
                 $detail = $channableArticle;
             }
 
+            $article = $detail['article'];
+            $articleId = $detail['articleId'];
+
             # Image check here because of performance issues
             $imageArticle = $this->channableArticleResource->getArticleImages($detail['id']);
 
             $images = $imageArticle['images'];
-            #if ( empty($images) ) {
-            #    $images = $imageArticle['article']['images'];
-            #}
+
+            # If main article without variants set article images
+            if ( !$images && !$article['configuratorSetId'] ) {
+                $images = $imageArticle['article']['images'];
+            }
+
+            # If plugin setting "only articles with images" is set
             if ( $this->pluginConfig['apiOnlyArticlesWithImg'] && empty($images) ) {
                 continue;
             }
-
-            $article = $detail['article'];
-            $articleId = $detail['articleId'];
 
             $item = array();
 
