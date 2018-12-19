@@ -28,7 +28,7 @@ https://github.com/RESPONSEGmbH/shopware_plugin_reschannable/archive/master.zip
 
 ##### Transfer all articles
 This setting overrides manual article mapping.<br />
-Default: no
+Default: yes
 
 ##### Only transfer active articles:
 Decide here if also inactive articles should be transferred.<br />
@@ -44,11 +44,11 @@ Default: no
 
 ##### Performance: API record limit per call 
 This means that Channable is only allowed to read out the number of articles entered per call. Should your shop server cancel on call, you can reduce this number.<br />
-Default: 250
+Default: 1000
  
 ### Connect to Channable
 1.	Open the Channable Configuration via the Plugin Manager.
-2.	Click the "Auto Connect" button. You will now be redirected to Channable, where you can connect your shop with Channable.
+2.	Click on the "Auto Connect" button of the shop you want to connect to. You will now be redirected to Channable, where you can connect your shop with Channable.
 3.	For more information about configuring in Channable, see the Channable Help Center:
 https://support.channable.com/hc/en-us
 
