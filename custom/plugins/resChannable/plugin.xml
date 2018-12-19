@@ -4,12 +4,31 @@
     <label lang="de">Channable Connector</label>
     <label lang="en">Channable Connector</label>
 
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <copyright>(c) by RESPONSE GmbH</copyright>
     <license>MIT</license>
     <link>http://www.response-gmbh.de/</link>
     <author>RESPONSE GmbH</author>
     <compatibility minVersion="5.2.27"/>
+
+    <changelog version="1.2.2">
+        <changes lang="de">
+            <![CDATA[
+                <ul>
+                    <li>Preislisten und URLs sind jetzt abhängig von der Shopeinstellung.</li>
+                    <li>Unterschiedliche Plugin-Konfiguration für Sub- und Sprachshop.</li>
+                </ul>
+            ]]>
+        </changes>
+        <changes lang="en">
+            <![CDATA[
+                <ul>
+                    <li>Price lists and URLs are now dependent on the shop setting.</li>
+                    <li>Different plugin configuration for sub and language shop.</li>
+                </ul>
+            ]]>
+        </changes>
+    </changelog>
 
     <changelog version="1.2.1">
         <changes lang="de">

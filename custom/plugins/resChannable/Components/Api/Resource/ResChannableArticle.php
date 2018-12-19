@@ -135,7 +135,7 @@ class ResChannableArticle extends Resource
             ->from('resChannable\Models\resChannableArticle\resChannableArticle', 'ChannableArticle')
             ->join('ChannableArticle.detail', 'detail')
             ->join('detail.article', 'article')
-            ->join('article.allCategories', 'categories', null, null, 'categories.id')
+            ->leftJoin('article.allCategories', 'categories', null, null, 'categories.id')
             ->leftJoin('detail.unit', 'detailUnit')
             ->leftJoin('article.tax', 'tax')
             ->leftJoin('detail.attribute', 'detailAttribute')
@@ -203,11 +203,24 @@ class ResChannableArticle extends Resource
         return $this->getFullResult($builder);
     }
 
-    public function getArticleSeoUrl($articleId)
+    public function getArticleSeoUrl($articleId,$shopId)
     {
         $connection = Shopware()->Container()->get('dbal_connection');
 
-        $url = $connection->fetchColumn("SELECT path FROM `s_core_rewrite_urls` WHERE main=1 AND subshopID=1 AND org_path=?", array('sViewport=detail&sArticle='.$articleId));
+        $url = $connection->fetchColumn(
+
+            "SELECT path 
+            FROM `s_core_rewrite_urls`
+            WHERE main = 1
+            AND subshopID = :subId 
+            AND org_path = :orgPath",
+
+            array(
+                'subId' => $shopId,
+                'orgPath' => 'sViewport=detail&sArticle='.$articleId
+            )
+
+        );
 
         return $url;
     }
@@ -227,7 +240,8 @@ class ResChannableArticle extends Resource
             ->from('Shopware\Models\Article\Article', 'article')
             ->innerJoin('article.similar', 'similar')
             ->where('article.id = :articleId')
-            ->setParameter('articleId', $articleId);
+            ->setParameter('articleId', $articleId)
+            ->setMaxResults(10);
 
         $article = $this->getSingleResult($builder);
 
@@ -249,7 +263,8 @@ class ResChannableArticle extends Resource
             ->from('Shopware\Models\Article\Article', 'article')
             ->innerJoin('article.related', 'related')
             ->where('article.id = :articleId')
-            ->setParameter('articleId', $articleId);
+            ->setParameter('articleId', $articleId)
+            ->setMaxResults(10);
 
         $article = $this->getSingleResult($builder);
 
@@ -263,7 +278,7 @@ class ResChannableArticle extends Resource
      *
      * @return \Doctrine\ORM\QueryBuilder
      */
-    public function getPrices($articleDetailId, $tax)
+    public function getPrices($articleDetailId, $tax, $customerGroup)
     {
         $builder = $this->getManager()->createQueryBuilder();
 
@@ -272,7 +287,9 @@ class ResChannableArticle extends Resource
             ->join('prices.customerGroup', 'customerGroup')
             ->leftJoin('prices.attribute', 'attribute')
             ->where('prices.articleDetailsId = ?1')
+            ->andWhere('customerGroup.id = ?2')
             ->setParameter(1, $articleDetailId)
+            ->setParameter(2, $customerGroup)
             ->orderBy('customerGroup.id', 'ASC')
             ->addOrderBy('prices.from', 'ASC');
 

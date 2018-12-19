@@ -30,6 +30,15 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
      */
     protected $shop = null;
 
+    /**
+     * @var \Shopware\Models\Shop\Shop
+     */
+    protected $mainShop = null;
+
+    protected $shopId = null;
+
+    protected $mainShopId = null;
+
     protected $sSYSTEM = null;
 
     protected $config = null;
@@ -71,6 +80,17 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         }
 
         $this->shop->registerResources(Shopware()->Container());
+
+        $this->shopId = $this->shop->getId();
+
+        $this->mainShop = $this->shop->getMain();
+
+        if ( $this->mainShop ) {
+            $this->mainShopId = $this->mainShop->getId();
+        } else {
+            $this->mainShopId = $this->shopId;
+        }
+
         $this->admin = Shopware()->Modules()->Admin();
         $this->export = Shopware()->Modules()->Export();
 
@@ -188,7 +208,7 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
             }
 
             # Price
-            $item['prices'] = $this->channableArticleResource->getPrices($detail['id'],$article['tax']['tax']);
+            $item['prices'] = $this->channableArticleResource->getPrices($detail['id'],$article['tax']['tax'],$this->shop->getCustomerGroup()->getId());
             # Set first price of price list in root
             if ( $item['prices'] ) {
                 foreach ( $item['prices'] as $priceGroup ) {
@@ -357,7 +377,7 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
         $rewrite = Shopware()->Modules()->Core()->sRewriteLink($detail, $name);
 
-        $seoUrl = $baseFile . $this->channableArticleResource->getArticleSeoUrl($articleId) . '?number='.$number;
+        $seoUrl = $baseFile . $this->channableArticleResource->getArticleSeoUrl($articleId,$this->shopId) . '?number='.$number;
 
         $links = array('rewrite' => $rewrite,
                        'url'  => $detail,
