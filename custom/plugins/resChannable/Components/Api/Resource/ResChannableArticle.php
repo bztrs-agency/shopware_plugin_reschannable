@@ -188,17 +188,19 @@ class ResChannableArticle extends Resource
      * To prevent a big data, this function selects only the category name and id.
      *
      * @param $articleId
+     * @param $mainCategoriesId
      *
      * @return array
      */
-    public function getArticleCategories($articleId)
+    public function getArticleCategories($articleId,$mainCategoriesId)
     {
         $builder = $this->getManager()->createQueryBuilder();
-        $builder->select(array('categories.id', 'categories.name'))
-            ->from('Shopware\Models\Category\Category', 'categories')
-            ->innerJoin('categories.articles', 'articles')
-            ->where('articles.id = :articleId')
-            ->setParameter('articleId', $articleId);
+        $builder->select(array('categories.id'))
+            ->from('Shopware\Models\Category\Category', 'categories', 'categories.id')
+            ->where(':articleId MEMBER OF categories.articles')
+            ->andWhere('categories.path LIKE :path')
+            ->setParameter('articleId', $articleId)
+            ->setParameter('path', '%|' . $mainCategoriesId . '|%');
 
         return $this->getFullResult($builder);
     }

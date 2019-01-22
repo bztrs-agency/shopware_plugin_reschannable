@@ -4,12 +4,33 @@
     <label lang="de">Channable Connector</label>
     <label lang="en">Channable Connector</label>
 
-    <version>1.2.2</version>
+    <version>1.2.3</version>
     <copyright>(c) by RESPONSE GmbH</copyright>
     <license>MIT</license>
     <link>http://www.response-gmbh.de/</link>
     <author>RESPONSE GmbH</author>
     <compatibility minVersion="5.2.27"/>
+
+    <changelog version="1.2.3">
+        <changes lang="de">
+            <![CDATA[
+                <ul>
+                    <li>Texte sind jetzt sprachoptimiert.</li>
+                    <li>Das Feld "translations" wurde entfernt.</li>
+                    <li>Es werden nur noch die Kategorien des jeweiligen Sprach- oder Subshops übertragen.</li>
+                </ul>
+            ]]>
+        </changes>
+        <changes lang="en">
+            <![CDATA[
+                <ul>
+                    <li>Texts are now language optimized.</li>
+                    <li>The field "translations" has been removed.</li>
+                    <li>Only the categories of the respective language or subshop will be transferred.</li>
+                </ul>
+            ]]>
+        </changes>
+    </changelog>
 
     <changelog version="1.2.2">
         <changes lang="de">

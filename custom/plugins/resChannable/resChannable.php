@@ -1,4 +1,16 @@
 <?php
+/**
+ * This Software is the property of RESPONSE GmbH and is protected
+ * by copyright law - it is NOT Freeware.
+ * Any unauthorized use of this software without a valid license
+ * is a violation of the license agreement and will be prosecuted by
+ * civil and criminal law.
+ * http://www.response-gmbh.de
+ *
+ * @copyright (C) RESPONSE GmbH
+ * @author RESPONSE GmbH <response@response-gmbh.de>
+ * @link http://www.response-gmbh.de
+ */
 
 namespace resChannable;
 
