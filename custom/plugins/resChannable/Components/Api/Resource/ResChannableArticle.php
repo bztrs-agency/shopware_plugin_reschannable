@@ -280,22 +280,38 @@ class ResChannableArticle extends Resource
      *
      * @return \Doctrine\ORM\QueryBuilder
      */
-    public function getPrices($articleDetailId, $tax, $customerGroup)
+    public function getPrices($articleDetailId, $tax, $customerGroup,$calcBrutto)
     {
         $builder = $this->getManager()->createQueryBuilder();
 
-        $builder->select(array('prices', 'customerGroup', 'attribute'))
+        $builder->select(array('prices', 'customerGroup'))
             ->from('Shopware\Models\Article\Price', 'prices')
             ->join('prices.customerGroup', 'customerGroup')
-            ->leftJoin('prices.attribute', 'attribute')
             ->where('prices.articleDetailsId = ?1')
             ->andWhere('customerGroup.id = ?2')
             ->setParameter(1, $articleDetailId)
             ->setParameter(2, $customerGroup)
-            ->orderBy('customerGroup.id', 'ASC')
             ->addOrderBy('prices.from', 'ASC');
 
         $prices = $this->getFullResult($builder);
+
+        # No own prices found?
+        if ( !$prices ) {
+
+            # Load prices from fallback customer group EK
+            $builder = $this->getManager()->createQueryBuilder();
+
+            $builder->select(array('prices', 'customerGroup'))
+                ->from('Shopware\Models\Article\Price', 'prices')
+                ->join('prices.customerGroup', 'customerGroup')
+                ->where('prices.articleDetailsId = ?1')
+                ->andWhere("customerGroup.key = 'EK'")
+                ->setParameter(1, $articleDetailId)
+                ->addOrderBy('prices.from', 'ASC');
+
+            $prices = $this->getFullResult($builder);
+
+        }
 
         $priceList = array();
         foreach ( $prices as $price ) {
@@ -303,7 +319,7 @@ class ResChannableArticle extends Resource
             $pr = array(
 
                 'priceNetto' => $price['price'],
-                'priceBrutto' => round($price['price'] * (($tax + 100) / 100),2),
+                'priceBrutto' => ( $calcBrutto ? round($price['price'] * (($tax + 100) / 100),2) : $price['price']),
                 'pseudoPriceNetto' => $price['pseudoPrice'],
                 'pseudoPriceBrutto' => round($price['pseudoPrice'] * (($tax + 100) / 100),2)
 
@@ -426,6 +442,29 @@ class ResChannableArticle extends Resource
         $groups = $this->getSingleResult($builder);
 
         return ( $groups['article'] ? $groups['article']['customerGroups'] : false );
+    }
+
+    /**
+     * Returns the configured article seo categories.
+     * This categories are used for the seo url generation.
+     *
+     * @param $articleId
+     * @param $shopId
+     *
+     * @return array
+     */
+    public function getArticleSeoCategory($articleId,$shopId)
+    {
+        $builder = $this->getManager()->createQueryBuilder();
+        $builder->select(array('seoCategories.categoryId'))
+            ->from('Shopware\Models\Article\SeoCategory', 'seoCategories')
+            ->innerJoin('seoCategories.category', 'category')
+            ->where('seoCategories.articleId = :articleId')
+            ->andWhere('seoCategories.shop = :shop')
+            ->setParameter('articleId', $articleId)
+            ->setParameter('shop', $shopId);
+
+        return $this->getSingleResult($builder);
     }
 
     /**

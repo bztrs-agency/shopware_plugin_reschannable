@@ -13,7 +13,7 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
     /**
      * @var \Shopware\Components\Api\Resource\Article
      */
-    protected $articleResource = null;
+    #protected $articleResource = null;
 
     /**
      * @var \Shopware\Components\Api\Resource\Media
@@ -115,7 +115,7 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         $this->pluginConfig = $this->container->get('shopware.plugin.cached_config_reader')->getByPluginName('resChannable', $this->shop);
 
         $this->channableArticleResource = \Shopware\Components\Api\Manager::getResource('ResChannableArticle');
-        $this->articleResource = \Shopware\Components\Api\Manager::getResource('Article');
+        #$this->articleResource = \Shopware\Components\Api\Manager::getResource('Article');
         $this->mediaResource = \Shopware\Components\Api\Manager::getResource('Media');
         $this->translationResource = \Shopware\Components\Api\Manager::getResource('Translation');
 
@@ -256,7 +256,8 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
             }
 
             # Price
-            $item['prices'] = $this->channableArticleResource->getPrices($detail['id'],$article['tax']['tax'],$this->shop->getCustomerGroup()->getId());
+            $item['prices'] = $this->channableArticleResource->getPrices($detail['id'],$article['tax']['tax'],$this->shop->getCustomerGroup()->getId(),$this->shop->getCustomerGroup()->getTax());
+
             # Set first price of price list in root
             if ( $item['prices'] ) {
                 foreach ( $item['prices'] as $priceGroup ) {
@@ -295,6 +296,9 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
             # Categories
             $item['categories'] = $this->getArticleCategories($articleId);
+
+            # SEO categories
+            $item['seoCategory'] = $this->getArticleSeoCategory($articleId);
 
             # Shipping costs
             $item['shippingCosts'] = $this->getShippingCosts($detail);
@@ -519,6 +523,18 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         }
 
         return $categoryList;
+    }
+
+    private function getArticleSeoCategory($articleId)
+    {
+        $category = $this->channableArticleResource->getArticleSeoCategory($articleId,$this->shopId);
+
+        $em = $this->getModelManager();
+        $categoryRepo = $em->getRepository('Shopware\Models\Category\Category');
+
+        $path = array_values($categoryRepo->getPathById($category['categoryId']));
+
+        return $path;
     }
 
     public function getShippingCosts($detail)
