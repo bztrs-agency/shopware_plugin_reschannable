@@ -31,11 +31,34 @@ class resChannable extends Plugin
             'Enlight_Controller_Action_PreDispatch' => 'addTemplateDir',
             'Enlight_Controller_Dispatcher_ControllerPath_Api_resChannableApi' => 'onGetReschannableApiController',
             'Enlight_Controller_Front_StartDispatch' => 'onEnlightControllerFrontStartDispatch',
-            'Enlight_Controller_Action_PostDispatchSecure_Backend_Index' => 'onPostDispatchSecureBackendIndex'
+            'Enlight_Controller_Action_PostDispatchSecure_Backend_Index' => 'onPostDispatchSecureBackendIndex',
+            'product_stock_was_changed' => 'onProductStockWasChanged'
         );
     }
 
-    public function onPostDispatchSecureBackendIndex(\Enlight_Event_EventArgs $args) {
+    /**
+     * onProductStockWasChanged
+     *
+     * @param EventArgs $eventArgs
+     */
+    public function onProductStockWasChanged(EventArgs $eventArgs)
+    {
+        $config = $this->container->get('shopware.plugin.cached_config_reader')->getByPluginName($this->getName());
+
+        if ( !$config['apiAllowRealTimeUpdates'] )
+            return;
+
+        $webhook = $this->container->get('reschannable_service_plugin.webhook');
+        $webhook->updateChannableForAllShops($eventArgs->get('number'));
+    }
+
+    /**
+     * onPostDispatchSecureBackendIndex
+     *
+     * @param \Enlight_Event_EventArgs $args
+     */
+    public function onPostDispatchSecureBackendIndex(\Enlight_Event_EventArgs $args)
+    {
         $this->container->get('Template')->addTemplateDir(
             $this->getPath() . '/Resources/views/'
         );
@@ -43,7 +66,7 @@ class resChannable extends Plugin
     }
 
     /**
-     *
+     * Get Channable API Controller
      *
      * @return string
      */
@@ -116,7 +139,6 @@ class resChannable extends Plugin
      */
     private function createApiUser()
     {
-
         $apiKey = $this->getGeneratedApiKey(40);
 
         $mail = Shopware()->Config()->get('mail');
@@ -144,9 +166,7 @@ class resChannable extends Plugin
             Shopware()->Models()->persist($user);
             Shopware()->Models()->flush();
         }
-
     }
-
 
     /**
      * Generates random api key for user creation
@@ -154,8 +174,8 @@ class resChannable extends Plugin
      * @param int $length
      * @return string
      */
-    private function getGeneratedApiKey($length) {
-
+    private function getGeneratedApiKey($length)
+    {
         $chars = '0123456789';
         $chars .= 'abcdefghijklmnopqrstuvwxyz';
         $chars .= 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';

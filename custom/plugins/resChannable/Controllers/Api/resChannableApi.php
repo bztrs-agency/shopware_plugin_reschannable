@@ -1,19 +1,25 @@
 <?php
 
+use Shopware\Components\Api\Exception\NotFoundException;
+use Shopware\Components\Api\Exception\ParameterMissingException;
+use Shopware\Components\Api\Manager;
+
+/**
+ * Channable API controller
+ */
 class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_Rest
 {
 
-    private $allowedFncs = array('getarticles');
+    /**
+     * Allowed functions
+     * @var array
+     */
+    private $allowedFncs = array('getarticles','setwebhookurl');
 
     /**
      * @var \resChannable\Components\Api\Resource\ResChannableArticle
      */
     protected $channableArticleResource = null;
-
-    /**
-     * @var \Shopware\Components\Api\Resource\Article
-     */
-    #protected $articleResource = null;
 
     /**
      * @var \Shopware\Components\Api\Resource\Media
@@ -55,8 +61,14 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
      */
     protected $mainShopId = null;
 
+    /**
+     * @var string
+     */
     protected $sSYSTEM = null;
 
+    /**
+     * @var Shopware_Components_Config
+     */
     protected $config = null;
 
     /**
@@ -74,10 +86,21 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
      */
     protected $moduleManager = null;
 
+    /**
+     * @var array
+     */
     private $paymentMethods = null;
 
+    /**
+     * @var \Shopware\Components\Plugin\CachedConfigReader
+     */
     private $pluginConfig = null;
 
+    /**
+     * Init function
+     *
+     * @throws \Exception
+     */
     public function init()
     {
         # load certain shop
@@ -86,14 +109,12 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         $this->shop = $repository->getActiveById($shopId);
 
         # load default shop if shop is not set
-        if ( !$this->shop && !$shopId ) {
+        if ( !$this->shop && !$shopId )
             $this->shop = $repository->getActiveDefault();
-        }
 
         # throw exception if shop loading failed
-        if ( !$this->shop ) {
-            throw new Shopware\Components\Api\Exception\NotFoundException('Shop not found');
-        }
+        if ( !$this->shop )
+            throw new NotFoundException('Shop not found');
 
         $this->shop->registerResources(Shopware()->Container());
 
@@ -114,10 +135,9 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
         $this->pluginConfig = $this->container->get('shopware.plugin.cached_config_reader')->getByPluginName('resChannable', $this->shop);
 
-        $this->channableArticleResource = \Shopware\Components\Api\Manager::getResource('ResChannableArticle');
-        #$this->articleResource = \Shopware\Components\Api\Manager::getResource('Article');
-        $this->mediaResource = \Shopware\Components\Api\Manager::getResource('Media');
-        $this->translationResource = \Shopware\Components\Api\Manager::getResource('Translation');
+        $this->channableArticleResource = Manager::getResource('ResChannableArticle');
+        $this->mediaResource = Manager::getResource('Media');
+        $this->translationResource = Manager::getResource('Translation');
 
         $this->translationComponent = new Shopware_Components_Translation();
         $this->configUnits = array_shift(array_values($this->translationComponent->read($this->shopId,'config_units')));
@@ -131,15 +151,17 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         $this->loadPaymentMethods();
     }
 
+    /**
+     * Index action
+     *
+     * @throws ParameterMissingException
+     */
     public function indexAction()
     {
         $fnc = $this->Request()->getParam('fnc');
 
-        if ( !in_array($fnc,$this->allowedFncs)) {
-
-            throw new Shopware\Components\Api\Exception\NotFoundException('Function not found');
-
-        }
+        if ( !in_array($fnc,$this->allowedFncs))
+            throw new ParameterMissingException('fnc');
 
         $result = array();
 
@@ -153,19 +175,33 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
                 break;
 
+            case 'setwebhookurl':
+
+                $url = $this->Request()->getParam('url');
+
+                $this->_saveWebHookUrl($url);
+
+                break;
+
         }
 
         $this->View()->assign($result);
         $this->View()->assign('success', true);
     }
 
+    /**
+     * Get article list
+     *
+     * @return array
+     */
     private function getArticleList()
     {
         $articleIdList = $this->getArticleIdList();
 
         $result = array();
 
-        for ($i = 0; $i < sizeof($articleIdList); $i++) {
+        $articleCnt = count($articleIdList);
+        for ($i = 0; $i < $articleCnt; $i++) {
 
             $channableArticle = $articleIdList[$i];
 
@@ -324,6 +360,11 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         return $result;
     }
 
+    /**
+     * Get article id list
+     *
+     * @return array
+     */
     private function getArticleIdList()
     {
         $limit = $this->pluginConfig['apiPollLimit'];
@@ -360,6 +401,11 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
                 'expression' => '=',
                 'value'      => '1'
             );
+            $filter[] = array(
+                'property'   => 'detail.active',
+                'expression' => '=',
+                'value'      => '1'
+            );
         }
 
         # only articles with an ean
@@ -381,11 +427,18 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         return $result['data'];
     }
 
+    /**
+     * Get article image paths
+     *
+     * @param $articleImages
+     * @return array
+     */
     private function getArticleImagePaths($articleImages)
     {
         $images = array();
 
-        for ( $i = 0; $i < sizeof($articleImages); $i++ ) {
+        $imageCnt = count($articleImages);
+        for ( $i = 0; $i < $imageCnt; $i++ ) {
 
             try {
 
@@ -436,6 +489,11 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         return $links;
     }
 
+    /**
+     * Get base path
+     *
+     * @return string
+     */
     private function getBasePath()
     {
         $url = $this->Request()->getBaseUrl() . '/';
@@ -445,6 +503,12 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         return $url;
     }
 
+    /**
+     * Get shipping time text
+     *
+     * @param $detail
+     * @return mixed|string
+     */
     private function getShippingTimeText($detail)
     {
 
@@ -506,6 +570,12 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         return $shippingTime;
     }
 
+    /**
+     * Get article categories
+     *
+     * @param $articleId
+     * @return array
+     */
     private function getArticleCategories($articleId)
     {
         $categories = $this->channableArticleResource->getArticleCategories($articleId,$this->shop->getCategory()->getId());
@@ -525,6 +595,12 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         return $categoryList;
     }
 
+    /**
+     * Get article seo category
+     *
+     * @param $articleId
+     * @return array
+     */
     private function getArticleSeoCategory($articleId)
     {
         $category = $this->channableArticleResource->getArticleSeoCategory($articleId,$this->shopId);
@@ -537,6 +613,12 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         return $path;
     }
 
+    /**
+     * Get shipping costs
+     *
+     * @param $detail
+     * @return array
+     */
     public function getShippingCosts($detail)
     {
         $paymentMethods = $this->getPaymentMethods();
@@ -560,6 +642,11 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         return $shippingCosts;
     }
 
+    /**
+     * Load payment methods
+     *
+     * @throws \Exception
+     */
     private function loadPaymentMethods()
     {
         $builder = Shopware()->Container()->get('dbal_connection')->createQueryBuilder();
@@ -574,6 +661,11 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         $this->paymentMethods = $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Get payment methods
+     *
+     * @return array
+     */
     private function getPaymentMethods()
     {
         return $this->paymentMethods;
@@ -716,6 +808,23 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
         $field = preg_replace('/[^0-9a-zA-Z_]+/','',$field);
 
         return $field;
+    }
+
+    /**
+     * Save webhook url in order to activate or deactivate the webhooks
+     *
+     * @param $url
+     * @throws ParameterMissingException
+     */
+    private function _saveWebHookUrl($url)
+    {
+        if ( !$this->shopId )
+            throw new NotFoundException('Shop id not set');
+
+        $shop = Shopware()->Models()->getRepository('Shopware\Models\Shop\Shop')->findOneBy(array('id' => $this->shopId));
+        $pluginManager = Shopware()->Container()->get('shopware_plugininstaller.plugin_manager');
+        $plugin = $pluginManager->getPluginByName('resChannable');
+        $pluginManager->saveConfigElement($plugin, 'apiWebhookUrl', $url, $shop);
     }
 
 }

@@ -39,6 +39,25 @@
                 <minValue>5</minValue>
             </options>
         </element>
+        <element type="boolean" scope="shop">
+            <name>apiAllowRealTimeUpdates</name>
+            <label lang="de"><![CDATA[Echtzeit Produkt-Updates aktivieren]]></label>
+            <label lang="en">Enable real-time product updates</label>
+            <value>true</value>
+            <description lang="de"><![CDATA[Aktivieren Sie diese Funktion, wenn Ihre Bestände mit Channable in Echtzeit abgeglichen werden sollen.]]></description>
+            <description lang="en">Activate this function if you want your inventory to be synchronized with Channable in real time.</description>
+        </element>
+        <element scope="shop">
+            <name>apiWebhookUrl</name>
+            <label lang="de"><![CDATA[Webhook URL]]></label>
+            <label lang="en">Webhook url</label>
+            <value></value>
+            <description lang="de"><![CDATA[An diese URL werden Ihre aktuellen Bestände geschickt, sobald sich der Bestand eines Artikels ändert. Diese URL darf nicht geändert werden.]]></description>
+            <description lang="en">Your current inventory will be sent to this URL as soon as the inventory of an item changes. This url can not be changed.</description>
+            <options>
+                <readOnly>true</readOnly>
+            </options>
+        </element>
         <element type="button">
             <name>AutoConnect</name>
             <label lang="de">Auto Connect</label>

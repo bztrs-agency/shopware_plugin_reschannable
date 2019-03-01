@@ -45,6 +45,10 @@ Default: no
 ##### Performance: API record limit per call 
 This means that Channable is only allowed to read out the number of articles entered per call. Should your shop server cancel on call, you can reduce this number.<br />
 Default: 1000
+
+##### Enable real-time product updates
+Activate this function if you want your inventory to be synchronized with Channable in real time.<br />
+Default: yes
  
 ### Connect to Channable
 1.	Open the Channable Configuration via the Plugin Manager.
