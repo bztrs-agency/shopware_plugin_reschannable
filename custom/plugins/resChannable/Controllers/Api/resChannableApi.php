@@ -220,8 +220,7 @@ class Shopware_Controllers_Api_resChannableApi extends Shopware_Controllers_Api_
 
             $images = $imageArticle['images'];
 
-            # If main article without variants set article images
-            if ( !$images && !$article['configuratorSetId'] ) {
+            if (!empty($imageArticle['article']['images'])) {
                 $images = $imageArticle['article']['images'];
             }
 
