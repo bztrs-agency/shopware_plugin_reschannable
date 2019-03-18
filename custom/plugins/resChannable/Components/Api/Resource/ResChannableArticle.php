@@ -192,7 +192,7 @@ class ResChannableArticle extends Resource
      *
      * @return array
      */
-    public function getArticleCategories($articleId,$mainCategoriesId)
+    public function getArticleCategories($articleId, $mainCategoriesId)
     {
         $builder = $this->getManager()->createQueryBuilder();
         $builder->select(array('categories.id'))
@@ -205,7 +205,7 @@ class ResChannableArticle extends Resource
         return $this->getFullResult($builder);
     }
 
-    public function getArticleSeoUrl($articleId,$shopId)
+    public function getArticleSeoUrl($articleId, $shopId)
     {
         $connection = Shopware()->Container()->get('dbal_connection');
 
@@ -219,9 +219,8 @@ class ResChannableArticle extends Resource
 
             array(
                 'subId' => $shopId,
-                'orgPath' => 'sViewport=detail&sArticle='.$articleId
+                'orgPath' => 'sViewport=detail&sArticle=' . $articleId
             )
-
         );
 
         return $url;
@@ -280,7 +279,7 @@ class ResChannableArticle extends Resource
      *
      * @return \Doctrine\ORM\QueryBuilder
      */
-    public function getPrices($articleDetailId, $tax, $customerGroup,$calcBrutto)
+    public function getPrices($articleDetailId, $tax, $customerGroup, $calcBrutto)
     {
         $builder = $this->getManager()->createQueryBuilder();
 
@@ -296,37 +295,32 @@ class ResChannableArticle extends Resource
         $prices = $this->getFullResult($builder);
 
         # No own prices found?
-        if ( !$prices ) {
-
+        if (!$prices) {
             # Load prices from fallback customer group EK
             $builder = $this->getManager()->createQueryBuilder();
 
             $builder->select(array('prices', 'customerGroup'))
-                ->from('Shopware\Models\Article\Price', 'prices')
-                ->join('prices.customerGroup', 'customerGroup')
-                ->where('prices.articleDetailsId = ?1')
-                ->andWhere("customerGroup.key = 'EK'")
-                ->setParameter(1, $articleDetailId)
-                ->addOrderBy('prices.from', 'ASC');
+                    ->from('Shopware\Models\Article\Price', 'prices')
+                    ->join('prices.customerGroup', 'customerGroup')
+                    ->where('prices.articleDetailsId = ?1')
+                    ->andWhere("customerGroup.key = 'EK'")
+                    ->setParameter(1, $articleDetailId)
+                    ->addOrderBy('prices.from', 'ASC');
 
             $prices = $this->getFullResult($builder);
 
         }
 
         $priceList = array();
-        foreach ( $prices as $price ) {
-
+        foreach ($prices as $price) {
             $pr = array(
-
                 'priceNetto' => $price['price'],
-                'priceBrutto' => ( $calcBrutto ? round($price['price'] * (($tax + 100) / 100),2) : $price['price']),
+                'priceBrutto' => ($calcBrutto ? round($price['price'] * (($tax + 100) / 100), 2) : $price['price']),
                 'pseudoPriceNetto' => $price['pseudoPrice'],
-                'pseudoPriceBrutto' => round($price['pseudoPrice'] * (($tax + 100) / 100),2)
-
+                'pseudoPriceBrutto' => round($price['pseudoPrice'] * (($tax + 100) / 100), 2)
             );
 
-            $priceList[$this->filterFieldNames($price['customerGroupKey'])]['from_'.$price['from'].'_to_'.$price['to']] = $pr;
-
+            $priceList[$this->filterFieldNames($price['customerGroupKey'])]['from_' . $price['from'] . '_to_' . $price['to']] = $pr;
         }
 
         return $priceList;
@@ -358,17 +352,16 @@ class ResChannableArticle extends Resource
             ->leftJoin('article.images', 'articleImages')
             ->leftJoin('articleImages.parent', 'articleImageParent')
             ->where('detail.id = :detailId')
-            ->setParameters(array('detailId' => $detailId));
+            ->setParameter('detailId', $detailId);
 
-        $images = $this->getSingleResult($builder);
-
-        return $images;
+        return $this->getSingleResult($builder);
     }
 
     /**
      * Get article properties
      *
      * @param $detailId
+     *
      * @return array
      */
     public function getArticleProperties($detailId)
@@ -387,17 +380,16 @@ class ResChannableArticle extends Resource
             ->join('propertyValues.option', 'propertyOption')
             ->join('article.propertyGroup', 'propertyGroup')
             ->where('detail.id = :detailId')
-            ->setParameters(array('detailId' => $detailId));
+            ->setParameter('detailId', $detailId);
 
-        $properties = $this->getSingleResult($builder);
-
-        return $properties;
+        return $this->getSingleResult($builder);
     }
 
     /**
      * Get detail configurator options
      *
      * @param $detailId
+     *
      * @return array
      */
     public function getDetailConfiguratiorOptions($detailId)
@@ -412,17 +404,16 @@ class ResChannableArticle extends Resource
             ->join('detail.configuratorOptions', 'configuratorOptions')
             ->join('configuratorOptions.group', 'configuratorGroups')
             ->where('detail.id = :detailId')
-            ->setParameters(array('detailId' => $detailId));
+            ->setParameter('detailId', $detailId);
 
-        $options = $this->getSingleResult($builder);
-
-        return $options;
+        return $this->getSingleResult($builder);
     }
 
     /**
      * Get excluded customer groups
      *
      * @param $detailId
+     *
      * @return array|bool
      */
     public function getExcludedCustomerGroups($detailId)
@@ -437,11 +428,11 @@ class ResChannableArticle extends Resource
             ->join('detail.article', 'article')
             ->join('article.customerGroups', 'excludedCustomerGroups')
             ->where('detail.id = :detailId')
-            ->setParameters(array('detailId' => $detailId));
+            ->setParameter('detailId', $detailId);
 
         $groups = $this->getSingleResult($builder);
 
-        return ( $groups['article'] ? $groups['article']['customerGroups'] : false );
+        return ($groups['article'] ? $groups['article']['customerGroups'] : false);
     }
 
     /**
@@ -453,7 +444,7 @@ class ResChannableArticle extends Resource
      *
      * @return array
      */
-    public function getArticleSeoCategory($articleId,$shopId)
+    public function getArticleSeoCategory($articleId, $shopId)
     {
         $builder = $this->getManager()->createQueryBuilder();
         $builder->select(array('seoCategories.categoryId'))
@@ -471,16 +462,19 @@ class ResChannableArticle extends Resource
      * Remove bad chars from field names
      *
      * @param $field
+     *
      * @return string
      */
     private function filterFieldNames($field)
     {
-        # replace umlauts
-        $field = str_replace(array('Ä','Ö','Ü','ä','ö','ü','ß'),array('Ae','Oe','Ue','ae','oe','ue','ss'),$field);
-        # strip bad chars
-        $field = preg_replace('/[^0-9a-zA-Z_]+/','',$field);
+        // replace umlauts
+        $field = str_replace(
+            array('Ä', 'Ö', 'Ü', 'ä', 'ö', 'ü', 'ß'),
+            array('Ae', 'Oe', 'Ue', 'ae', 'oe', 'ue', 'ss'),
+            $field
+        );
 
-        return $field;
+        // strip bad chars
+        return preg_replace('/[^0-9a-zA-Z_]+/', '', $field);
     }
-
 }
