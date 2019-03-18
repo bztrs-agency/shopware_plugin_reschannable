@@ -56,5 +56,4 @@ class resChannableArticle extends ModelEntity
         $this->detailID = $detailID;
         return $this;
     }
-
 }

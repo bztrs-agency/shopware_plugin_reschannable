@@ -192,7 +192,7 @@ class ResChannableArticle extends Resource
      *
      * @return array
      */
-    public function getArticleCategories($articleId,$mainCategoriesId)
+    public function getArticleCategories($articleId, $mainCategoriesId)
     {
         $builder = $this->getManager()->createQueryBuilder();
         $builder->select(array('categories.id'))
@@ -205,23 +205,20 @@ class ResChannableArticle extends Resource
         return $this->getFullResult($builder);
     }
 
-    public function getArticleSeoUrl($articleId,$shopId)
+    public function getArticleSeoUrl($articleId, $shopId)
     {
         $connection = Shopware()->Container()->get('dbal_connection');
 
         $url = $connection->fetchColumn(
-
             "SELECT path 
             FROM `s_core_rewrite_urls`
             WHERE main = 1
             AND subshopID = :subId 
             AND org_path = :orgPath",
-
             array(
                 'subId' => $shopId,
-                'orgPath' => 'sViewport=detail&sArticle='.$articleId
+                'orgPath' => 'sViewport=detail&sArticle=' . $articleId
             )
-
         );
 
         return $url;
@@ -280,7 +277,7 @@ class ResChannableArticle extends Resource
      *
      * @return \Doctrine\ORM\QueryBuilder
      */
-    public function getPrices($articleDetailId, $tax, $customerGroup,$calcBrutto)
+    public function getPrices($articleDetailId, $tax, $customerGroup, $calcBrutto)
     {
         $builder = $this->getManager()->createQueryBuilder();
 
@@ -296,8 +293,7 @@ class ResChannableArticle extends Resource
         $prices = $this->getFullResult($builder);
 
         # No own prices found?
-        if ( !$prices ) {
-
+        if (!$prices) {
             # Load prices from fallback customer group EK
             $builder = $this->getManager()->createQueryBuilder();
 
@@ -310,23 +306,18 @@ class ResChannableArticle extends Resource
                 ->addOrderBy('prices.from', 'ASC');
 
             $prices = $this->getFullResult($builder);
-
         }
 
         $priceList = array();
-        foreach ( $prices as $price ) {
-
+        foreach ($prices as $price) {
             $pr = array(
-
                 'priceNetto' => $price['price'],
-                'priceBrutto' => ( $calcBrutto ? round($price['price'] * (($tax + 100) / 100),2) : $price['price']),
+                'priceBrutto' => ( $calcBrutto ? round($price['price'] * (($tax + 100) / 100), 2) : $price['price']),
                 'pseudoPriceNetto' => $price['pseudoPrice'],
-                'pseudoPriceBrutto' => round($price['pseudoPrice'] * (($tax + 100) / 100),2)
-
+                'pseudoPriceBrutto' => round($price['pseudoPrice'] * (($tax + 100) / 100), 2)
             );
 
-            $priceList[$this->filterFieldNames($price['customerGroupKey'])]['from_'.$price['from'].'_to_'.$price['to']] = $pr;
-
+            $priceList[$this->filterFieldNames($price['customerGroupKey'])]['from_' . $price['from'] . '_to_' . $price['to']] = $pr;
         }
 
         return $priceList;
@@ -453,7 +444,7 @@ class ResChannableArticle extends Resource
      *
      * @return array
      */
-    public function getArticleSeoCategory($articleId,$shopId)
+    public function getArticleSeoCategory($articleId, $shopId)
     {
         $builder = $this->getManager()->createQueryBuilder();
         $builder->select(array('seoCategories.categoryId'))
@@ -476,11 +467,10 @@ class ResChannableArticle extends Resource
     private function filterFieldNames($field)
     {
         # replace umlauts
-        $field = str_replace(array('Ä','Ö','Ü','ä','ö','ü','ß'),array('Ae','Oe','Ue','ae','oe','ue','ss'),$field);
+        $field = str_replace(array('Ä','Ö','Ü','ä','ö','ü','ß'), array('Ae','Oe','Ue','ae','oe','ue','ss'), $field);
         # strip bad chars
-        $field = preg_replace('/[^0-9a-zA-Z_]+/','',$field);
+        $field = preg_replace('/[^0-9a-zA-Z_]+/', '', $field);
 
         return $field;
     }
-
 }

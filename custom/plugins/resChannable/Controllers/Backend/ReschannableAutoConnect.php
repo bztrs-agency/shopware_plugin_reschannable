@@ -7,7 +7,7 @@ class Shopware_Controllers_Backend_ReschannableAutoConnect extends Enlight_Contr
 
     public function indexAction()
     {
-        die('');
+        return '';
     }
 
     public function getUrlAction()
@@ -16,22 +16,18 @@ class Shopware_Controllers_Backend_ReschannableAutoConnect extends Enlight_Contr
         $user = Shopware()->Models()->getRepository('Shopware\Models\User\User');
         $user = $user->findOneBy(array('username' => 'ChannableApiUser'));
 
-        if ( !$user ) {
-
+        if (!$user) {
             throw new Shopware\Components\Api\Exception\NotFoundException('Channable API user not found.');
-
         }
 
         $sApiKey = $user->getApiKey();
 
         $shopValue = $this->Request()->getParam('shopValue');
 
-        preg_match_all('/[0-9]+/',$shopValue,$shops);
+        preg_match_all('/[0-9]+/', $shopValue, $shops);
 
-        if ( !$shops ) {
-
+        if (!$shops) {
             throw new Shopware\Components\Api\Exception\NotFoundException('Shop not found.');
-
         }
 
         $shopValue = $shops[0];
@@ -68,9 +64,8 @@ class Shopware_Controllers_Backend_ReschannableAutoConnect extends Enlight_Contr
 
         $url = Shopware()->Snippets()->getNamespace('api/resChannable')->get(
             'autoConnectUrl'
-        ) . '?url='.$path.'&api_key='.$sApiKey.'&username=ChannableApiUser&shop='.$shopId;
+        ) . '?url=' . $path . '&api_key=' . $sApiKey . '&username=ChannableApiUser&shop=' . $shopId;
 
         echo json_encode(array('url' => $url));
     }
-
 }

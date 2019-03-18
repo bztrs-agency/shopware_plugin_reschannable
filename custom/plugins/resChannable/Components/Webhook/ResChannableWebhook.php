@@ -3,6 +3,7 @@
 namespace resChannable\Components\Webhook;
 
 use Doctrine\DBAL\Connection;
+use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\CachedConfigReader;
 use Shopware\Bundle\StoreFrontBundle\Struct;
@@ -61,8 +62,7 @@ class ResChannableWebhook
         CachedConfigReader $configReader,
         Service\ListProductServiceInterface $listProductService,
         Service\AdditionalTextServiceInterface $additionalTextService
-    )
-    {
+    ) {
         $this->connection = $connection;
         $this->entityManager = $entityManager;
         $this->contextService = $contextService;
@@ -82,18 +82,20 @@ class ResChannableWebhook
         $config = $this->_getPluginConfig($shop);
 
         # Check webhook url
-        if ( !$config['apiWebhookUrl'] || !$config['apiAllowRealTimeUpdates'] )
+        if (!$config['apiWebhookUrl'] || !$config['apiAllowRealTimeUpdates']) {
             return;
+        }
 
         # Get article data
         $article = $this->_getArticleData($number, $shop);
 
         # Do nothing if article data not found
-        if ( !$article )
+        if (!$article) {
             return;
+        }
 
         # Post stock data
-        $this->_postData(array($article),$config['apiWebhookUrl']);
+        $this->_postData(array($article), $config['apiWebhookUrl']);
     }
 
     /**
@@ -105,19 +107,20 @@ class ResChannableWebhook
     {
         $shops = $this->getShopRepository()->getActiveShops();
 
-        foreach ( $shops as $shop ) {
-
+        foreach ($shops as $shop) {
             $config = $this->configReader->getByPluginName('resChannable', $shop);
 
-            if ( !$config['apiAllowRealTimeUpdates'] || !$config['apiWebhookUrl'] )
+            if (!$config['apiAllowRealTimeUpdates'] || !$config['apiWebhookUrl']) {
                 continue;
+            }
 
             # Get article data
             $article = $this->_getArticleData($number, $shop);
 
             # Do nothing if article data not found
-            if ( !$article )
+            if (!$article) {
                 continue;
+            }
 
             # Post stock data
             $this->_postData(array($article), $config['apiWebhookUrl']);
@@ -131,10 +134,8 @@ class ResChannableWebhook
      */
     private function _getPluginConfig($shop)
     {
-        if ( $this->config === null ) {
-
+        if ($this->config === null) {
             $this->config = $this->configReader->getByPluginName('resChannable', $shop);
-
         }
 
         return $this->config;
@@ -156,13 +157,13 @@ class ResChannableWebhook
         $article = $detail->getArticle();
         $detailId = $detail->getId();
 
-        $prices = $this->getPrices($detailId,$article->getTax()->getTax());
+        $prices = $this->getPrices($detailId, $article->getTax()->getTax());
 
-        if ( !$config['apiAllowRealTimeUpdates'] )
+        if (!$config['apiAllowRealTimeUpdates']) {
             return;
+        }
 
-        if ( !$config['apiAllArticles'] ) {
-
+        if (!$config['apiAllArticles']) {
             $builder = $this->entityManager->createQueryBuilder();
 
             $builder->select(array(
@@ -178,18 +179,16 @@ class ResChannableWebhook
                 ->setParameter('id', $detailId);
 
             # only articles with an ean
-            if ( $config['apiOnlyArticlesWithEan'] ) {
-
+            if ($config['apiOnlyArticlesWithEan']) {
                 $builder->andWhere("detail.ean != ''");
-
             }
 
             $article = $builder->getQuery()
                 ->getOneOrNullResult(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
 
-            if ( !$article )
+            if (!$article) {
                 return;
-
+            }
         }
 
         $item = array();
@@ -269,8 +268,9 @@ class ResChannableWebhook
         $config = $this->_getPluginConfig();
 
         # Check webhook url
-        if ( !$config['apiWebhookUrl'] )
+        if (!$config['apiWebhookUrl']) {
             return;
+        }
 
         # JSON encoding
         $data = json_encode($data);
@@ -281,12 +281,10 @@ class ResChannableWebhook
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 'Content-Type: application/json',
-                'Content-Length: ' . strlen($data))
-        );
+                'Content-Length: ' . strlen($data)));
         curl_setopt($ch, CURLOPT_TIMEOUT, 5);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 
         $result = curl_exec($ch);
     }
-
 }

@@ -192,5 +192,4 @@ class Shopware_Controllers_Backend_ReschannableArticles extends Shopware_Control
 
         return array('success' => true, 'counter' => $counter);
     }
-
 }

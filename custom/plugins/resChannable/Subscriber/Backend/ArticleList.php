@@ -16,7 +16,6 @@ class ArticleList implements SubscriberInterface
 
     public function __construct()
     {
-
     }
 
     /**
@@ -31,13 +30,10 @@ class ArticleList implements SubscriberInterface
 
         $request = $args->getRequest();
 
-        if ( $request->getActionName() == 'saveSingleEntity' ) {
-
-            if ( $this->resChannablePostUpdates ) {
-
+        if ($request->getActionName() == 'saveSingleEntity') {
+            if ($this->resChannablePostUpdates) {
                 $webhook = Shopware()->Container()->get('reschannable_service_plugin.webhook');
                 $webhook->updateChannableForAllShops($this->resChannablePostData['number']);
-
             }
         }
     }
@@ -54,8 +50,7 @@ class ArticleList implements SubscriberInterface
 
         $request = $args->getRequest();
 
-        if ( $request->getActionName() == 'saveSingleEntity' ) {
-
+        if ($request->getActionName() == 'saveSingleEntity') {
             $this->resChannablePostUpdates = false;
 
             # new data
@@ -76,13 +71,12 @@ class ArticleList implements SubscriberInterface
 
             $article = $detail->getArticle();
 
-            $prices = $this->getPrices($data['Detail_id'],$article->getTax()->getTax());
+            $prices = $this->getPrices($data['Detail_id'], $article->getTax()->getTax());
 
             $oldPrice = $prices[0]['price'];
 
             # Start hook if new stock or price
-            if ( $newStock <> $oldStock || $newPrice <> $oldPrice ) {
-
+            if ($newStock <> $oldStock || $newPrice <> $oldPrice) {
                 $this->resChannablePostUpdates = true;
 
                 $number = $detail->getNumber();
@@ -136,7 +130,7 @@ class ArticleList implements SubscriberInterface
         foreach ($prices as $key => $price) {
             $customerGroup = $price['customerGroup'];
             if ($customerGroup['taxInput']) {
-                $price['price'] = round($price['price'] / 100 * (100 + $tax),2);
+                $price['price'] = round($price['price'] / 100 * (100 + $tax), 2);
                 $price['pseudoPrice'] = $price['pseudoPrice'] / 100 * (100 + $tax);
             }
             $prices[$key] = $price;
@@ -144,5 +138,4 @@ class ArticleList implements SubscriberInterface
 
         return $prices;
     }
-
 }

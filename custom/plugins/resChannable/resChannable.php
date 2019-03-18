@@ -14,6 +14,7 @@
 
 namespace resChannable;
 
+use Doctrine\Common\EventArgs;
 use Doctrine\ORM\Tools\SchemaTool;
 use Shopware\Components\Plugin;
 use Shopware\Components\Plugin\Context\InstallContext;
@@ -45,8 +46,9 @@ class resChannable extends Plugin
     {
         $config = $this->container->get('shopware.plugin.cached_config_reader')->getByPluginName($this->getName());
 
-        if ( !$config['apiAllowRealTimeUpdates'] )
+        if (!$config['apiAllowRealTimeUpdates']) {
             return;
+        }
 
         $webhook = $this->container->get('reschannable_service_plugin.webhook');
         $webhook->updateChannableForAllShops($eventArgs->get('number'));
@@ -115,10 +117,8 @@ class resChannable extends Plugin
         $classes = $this->getModelMetaData();
 
         try {
-
             $tool->createSchema($classes);
-
-        } catch ( \Exception $exception ) {
+        } catch (\Exception $exception) {
         }
     }
 
@@ -150,7 +150,6 @@ class resChannable extends Plugin
         $user = $user->findOneBy(array('username' => 'ChannableApiUser'));
 
         if (!$user) {
-
             $user = new User();
             $user->setUsername('ChannableApiUser');
             $user->setName('Channable API User');
@@ -182,8 +181,8 @@ class resChannable extends Plugin
 
         $key = '';
         $length = strlen($chars);
-        for ($i=0; $i<$length; $i++) {
-            $key .= $chars[rand(0,$length-1)];
+        for ($i = 0; $i < $length; $i++) {
+            $key .= $chars[rand(0, $length - 1)];
         }
         return $key;
     }
@@ -203,10 +202,9 @@ class resChannable extends Plugin
 
         $key = '';
         $length = strlen($chars);
-        for ($i=0; $i<$length; $i++) {
-            $key .= $chars[rand(0,$length-1)];
+        for ($i = 0; $i < $length; $i++) {
+            $key .= $chars[rand(0, $length - 1)];
         }
         return $key;
     }
-
 }

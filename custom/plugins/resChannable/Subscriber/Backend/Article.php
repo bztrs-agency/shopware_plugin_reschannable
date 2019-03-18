@@ -16,7 +16,6 @@ class Article implements SubscriberInterface
 
     public function __construct()
     {
-
     }
 
     public function onPostDispatchBackendArticle(\Enlight_Event_EventArgs $args)
@@ -26,26 +25,18 @@ class Article implements SubscriberInterface
 
         $request = $args->getRequest();
 
-        if ( $request->getActionName() == 'save' ) {
-
-            if ( $this->resChannablePostUpdates ) {
-
+        if ($request->getActionName() == 'save') {
+            if ($this->resChannablePostUpdates) {
                 $webhook = Shopware()->Container()->get('reschannable_service_plugin.webhook');
                 $webhook->updateChannableForAllShops($this->resChannablePostData['number']);
-
             }
-
         }
 
-        if ( $request->getActionName() == 'saveDetail' ) {
-
-            if ( $this->resChannablePostUpdates ) {
-
+        if ($request->getActionName() == 'saveDetail') {
+            if ($this->resChannablePostUpdates) {
                 $webhook = Shopware()->Container()->get('reschannable_service_plugin.webhook');
                 $webhook->updateChannableForAllShops($this->resChannablePostData['number']);
-
             }
-
         }
     }
 
@@ -61,10 +52,8 @@ class Article implements SubscriberInterface
 
         $request = $args->getRequest();
 
-        if ( $request->getActionName() == 'save' ) {
-
+        if ($request->getActionName() == 'save') {
             if ($request->has('id')) {
-
                 $this->resChannablePostUpdates = false;
 
                 # new data
@@ -74,7 +63,7 @@ class Article implements SubscriberInterface
                 $newStock = $data['mainDetail'][0]['inStock'];
 
                 # new price
-                $newPrice = round($data['mainPrices'][0]['price'],2);
+                $newPrice = round($data['mainPrices'][0]['price'], 2);
 
                 # old data
                 $detail = $this->getDetailRepository()
@@ -84,13 +73,12 @@ class Article implements SubscriberInterface
 
                 $article = $detail->getArticle();
 
-                $prices = $this->getPrices($data['mainDetailId'],$article->getTax()->getTax());
+                $prices = $this->getPrices($data['mainDetailId'], $article->getTax()->getTax());
 
                 $oldPrice = $prices[0]['price'];
 
                 # Start hook if new stock or price
-                if ( $newStock <> $oldStock || $newPrice <> $oldPrice ) {
-
+                if ($newStock <> $oldStock || $newPrice <> $oldPrice) {
                     $number = $detail->getNumber();
 
                     $this->resChannablePostUpdates = true;
@@ -104,10 +92,8 @@ class Article implements SubscriberInterface
             }
         }
 
-        if ( $request->getActionName() == 'saveDetail' ) {
-
+        if ($request->getActionName() == 'saveDetail') {
             if ($request->has('id')) {
-
                 $this->resChannablePostUpdates = false;
 
                 # new data
@@ -117,7 +103,7 @@ class Article implements SubscriberInterface
                 $newStock = $data['inStock'];
 
                 # new price
-                $newPrice = round($data['price'],2);
+                $newPrice = round($data['price'], 2);
 
                 # old data
                 $detail = $this->getDetailRepository()
@@ -127,13 +113,12 @@ class Article implements SubscriberInterface
 
                 $article = $detail->getArticle();
 
-                $prices = $this->getPrices($data['id'],$article->getTax()->getTax());
+                $prices = $this->getPrices($data['id'], $article->getTax()->getTax());
 
                 $oldPrice = $prices[0]['price'];
 
                 # Start hook if new stock or price
-                if ( $newStock <> $oldStock || $newPrice <> $oldPrice ) {
-
+                if ($newStock <> $oldStock || $newPrice <> $oldPrice) {
                     $number = $detail->getNumber();
 
                     $this->resChannablePostUpdates = true;
@@ -188,7 +173,7 @@ class Article implements SubscriberInterface
         foreach ($prices as $key => $price) {
             $customerGroup = $price['customerGroup'];
             if ($customerGroup['taxInput']) {
-                $price['price'] = round($price['price'] / 100 * (100 + $tax),2);
+                $price['price'] = round($price['price'] / 100 * (100 + $tax), 2);
                 $price['pseudoPrice'] = $price['pseudoPrice'] / 100 * (100 + $tax);
             }
             $prices[$key] = $price;
@@ -196,5 +181,4 @@ class Article implements SubscriberInterface
 
         return $prices;
     }
-
 }
